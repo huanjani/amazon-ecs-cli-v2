@@ -44,7 +44,7 @@ Conditions:
   CreateNATGateways:
     !Not [!Equals [ !Ref NATWorkloads, ""]]
   CreateVPCEndpoints:
-    !Not [ !Equals [ !Ref VPCEndpointsWorkloads, "" ] ]
+    !Not [ !Equals [ !Ref VPCEndpointWorkloads, "" ] ]
   HasAliases:
     !Not [!Equals [ !Ref Aliases, "" ]]
 Resources:

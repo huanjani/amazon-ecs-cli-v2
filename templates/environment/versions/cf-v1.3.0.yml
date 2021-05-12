@@ -17,9 +17,6 @@ Parameters:
   NATWorkloads:
     Type: String
     Default: ""
-  VPCEndpointWorkloads:
-    Type: String
-    Default: ""
   ToolsAccountPrincipalARN:
     Type: String
   AppDNSName:
@@ -40,8 +37,6 @@ Conditions:
     !Not [!Equals [ !Ref EFSWorkloads, ""]]
   CreateNATGateways:
     !Not [!Equals [ !Ref NATWorkloads, ""]]
-  CreateVPCEndpoints:
-    !Not [!Equals [ !Ref VPCEndpointsWorkloads, ""]]
 Resources:
 {{- if not .ImportVPC}}
 {{include "vpc-resources" .VPCConfig | indent 2}}
