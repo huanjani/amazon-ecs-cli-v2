@@ -307,6 +307,11 @@ Outputs:
 {{- end}}
     Export:
       Name: !Sub ${AWS::StackName}-PrivateSubnets
+  PrivateRouteTables:
+    Condition: CreateVPCEndpoints
+    Value: !Join [ ',', [ {{range $ind, $cidr := .VPCConfig.PrivateSubnetCIDRs}}!Ref PrivateRouteTable{{inc $ind}}, {{end}}] ]
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateRouteTables
   ServiceDiscoveryNamespaceID:
     Value: !GetAtt ServiceDiscoveryNamespace.Id
     Export:
@@ -380,3 +385,8 @@ Outputs:
     Description: The ID of the Copilot-managed EFS filesystem. 
     Export:
       Name: !Sub ${AWS::StackName}-FilesystemID
+  VPCEndpointSecurityGroup:
+    Condition: CreateVPCEndpoints
+    Value: !Ref   VPCEndpointSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCEndpointSecurityGroup
