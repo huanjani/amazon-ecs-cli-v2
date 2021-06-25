@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -268,8 +269,6 @@ func (o *initSvcOpts) askDockerfile() (isDfSelected bool, err error) {
 	if o.dockerfilePath != "" || o.image != "" {
 		return true, nil
 	}
-<<<<<<< Updated upstream
-=======
 	if err = o.dockerEngineValidator.CheckDockerEngineRunning(); err != nil {
 		var errDaemon *exec.ErrDockerDaemonNotResponsive
 		switch {
@@ -291,7 +290,6 @@ func (o *initSvcOpts) askDockerfile() (isDfSelected bool, err error) {
 	//}
 	//o.platform = fmt.Sprintf("%s/%s", os, arch)
 	//fmt.Println(o.platform)
->>>>>>> Stashed changes
 	df, err := o.sel.Dockerfile(
 		fmt.Sprintf(fmtWkldInitDockerfilePrompt, color.HighlightUserInput(o.name)),
 		fmt.Sprintf(fmtWkldInitDockerfilePathPrompt, color.HighlightUserInput(o.name)),

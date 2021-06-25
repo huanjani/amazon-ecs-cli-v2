@@ -49,7 +49,6 @@ type Workload struct {
 type Image struct {
 	Build    BuildArgsOrString `yaml:"build"`    // Build an image from a Dockerfile.
 	Location *string           `yaml:"location"` // Use an existing image instead.
-
 	//Platform PlatformConfig    //`yaml:"platform"`
 	//Platform     PlatformArgsOrString `yaml:"platform"`        // Include OS/Arch if host OS is Windows or Linux/ARM
 	DockerLabels map[string]string `yaml:"labels,flow"`     // Apply Docker labels to the container at runtime.

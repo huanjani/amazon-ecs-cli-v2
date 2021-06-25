@@ -130,7 +130,7 @@ func (s *LoadBalancedWebService) Template() (string, error) {
 		Command:             command,
 		DependsOn:           dependencies,
 		Platform:            convertRuntimePlatform(),
-git l	})
+	})
 	if err != nil {
 		return "", err
 	}
