@@ -89,7 +89,19 @@ func TestBackendService_Template(t *testing.T) {
 			wantedErr: fmt.Errorf("generate addons template for %s: %w", aws.StringValue(testBackendSvcManifest.Name), errors.New("some error")),
 		},
 		"failed parsing sidecars template": {
-			manifest: testBackendSvcManifestWithBadSidecar,
+			setUpManifest: func(svc *BackendService) {
+				testBackendSvcManifestWithBadSidecar := manifest.NewBackendService(baseProps)
+				testBackendSvcManifestWithBadSidecar.Sidecars = map[string]*manifest.SidecarConfig{
+					"xray": {
+						Port: aws.String("80/80/80"),
+					},
+				}
+				//testBackendSvcManifestWithBadSidecar.Platform = &manifest.PlatformConfig{
+				//	OS:   defaultOSFamily,
+				//	Arch: defaultArch,
+				//}
+				svc.manifest = testBackendSvcManifestWithBadSidecar
+			},
 			mockDependencies: func(t *testing.T, ctrl *gomock.Controller, svc *BackendService) {
 				m := mocks.NewMockbackendSvcReadParser(ctrl)
 				m.EXPECT().Read(desiredCountGeneratorPath).Return(&template.Content{Buffer: bytes.NewBufferString("something")}, nil)
@@ -103,7 +115,20 @@ func TestBackendService_Template(t *testing.T) {
 			wantedErr: fmt.Errorf("convert the sidecar configuration for service frontend: %w", errors.New("cannot parse port mapping from 80/80/80")),
 		},
 		"failed parsing Auto Scaling template": {
-			manifest: testBackendSvcManifestWithBadAutoScaling,
+			setUpManifest: func(svc *BackendService) {
+				testBackendSvcManifestWithBadAutoScaling := manifest.NewBackendService(baseProps)
+				badRange := manifest.IntRangeBand("badRange")
+				testBackendSvcManifestWithBadAutoScaling.Count.AdvancedCount = manifest.AdvancedCount{
+					Range: &manifest.Range{
+						Value: &badRange,
+					},
+				}
+				//testBackendSvcManifestWithBadAutoScaling.Platform = &manifest.PlatformConfig{
+				//	OS:   defaultOSFamily,
+				//	Arch: defaultArch,
+				//}
+				svc.manifest = testBackendSvcManifestWithBadAutoScaling
+			},
 			mockDependencies: func(t *testing.T, ctrl *gomock.Controller, svc *BackendService) {
 				m := mocks.NewMockbackendSvcReadParser(ctrl)
 				m.EXPECT().Read(desiredCountGeneratorPath).Return(&template.Content{Buffer: bytes.NewBufferString("something")}, nil)
@@ -117,7 +142,13 @@ func TestBackendService_Template(t *testing.T) {
 			wantedErr: fmt.Errorf("convert the Auto Scaling configuration for service frontend: %w", errors.New("invalid range value badRange. Should be in format of ${min}-${max}")),
 		},
 		"failed parsing svc template": {
-			manifest: testBackendSvcManifest,
+			setUpManifest: func(svc *BackendService) {
+				svc.manifest = manifest.NewBackendService(baseProps)
+				//svc.manifest.Platform = &manifest.PlatformConfig{
+				//	OS:   defaultOSFamily,
+				//	Arch: defaultArch,
+				//}
+			},
 			mockDependencies: func(t *testing.T, ctrl *gomock.Controller, svc *BackendService) {
 				m := mocks.NewMockbackendSvcReadParser(ctrl)
 				m.EXPECT().Read(desiredCountGeneratorPath).Return(&template.Content{Buffer: bytes.NewBufferString("something")}, nil)
@@ -132,7 +163,35 @@ func TestBackendService_Template(t *testing.T) {
 			wantedErr: fmt.Errorf("parse backend service template: %w", errors.New("some error")),
 		},
 		"render template": {
-			manifest: testBackendSvcManifest,
+			setUpManifest: func(svc *BackendService) {
+				svc.manifest = manifest.NewBackendService(manifest.BackendServiceProps{
+					WorkloadProps: manifest.WorkloadProps{
+						Name:       testServiceName,
+						Dockerfile: testDockerfile,
+					},
+					Port: 8080,
+					HealthCheck: &manifest.ContainerHealthCheck{
+						Command:     []string{"CMD-SHELL", "curl -f http://localhost/ || exit 1"},
+						Interval:    &testInterval,
+						Retries:     &testRetries,
+						Timeout:     &testTimeout,
+						StartPeriod: &testStartPeriod,
+					},
+				})
+				svc.manifest.EntryPoint = manifest.EntryPointOverride{
+					String:      nil,
+					StringSlice: []string{"enter", "from"},
+				}
+				svc.manifest.Command = manifest.CommandOverride{
+					String:      nil,
+					StringSlice: []string{"here"},
+				}
+				svc.manifest.ExecuteCommand = manifest.ExecuteCommand{Enable: aws.Bool(true)}
+				//svc.manifest.Platform = &manifest.PlatformConfig{
+				//	OS:   defaultOSFamily,
+				//	Arch: defaultArch,
+				//}
+			},
 			mockDependencies: func(t *testing.T, ctrl *gomock.Controller, svc *BackendService) {
 				m := mocks.NewMockbackendSvcReadParser(ctrl)
 				m.EXPECT().Read(desiredCountGeneratorPath).Return(&template.Content{Buffer: bytes.NewBufferString("something")}, nil)
@@ -148,6 +207,12 @@ func TestBackendService_Template(t *testing.T) {
 					NestedStack: &template.WorkloadNestedStackOpts{
 						StackName:       addon.StackName,
 						VariableOutputs: []string{"Hello"},
+					},
+					EntryPoint: []string{"enter", "from"},
+					Command:    []string{"here"},
+					Platform: &template.RuntimePlatformOpts{
+						OS:   "LINUX",
+						Arch: "X86_64",
 					},
 				}).Return(&template.Content{Buffer: bytes.NewBufferString("template")}, nil)
 				svc.parser = m

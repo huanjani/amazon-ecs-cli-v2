@@ -65,6 +65,7 @@ type WorkloadProps struct {
 	Name           string
 	DockerfilePath string
 	Image          string
+	//Platform       string
 }
 
 // JobProps contains the information needed to represent a Job.
@@ -263,6 +264,7 @@ func newJobManifest(i *JobProps) (encoding.BinaryMarshaler, error) {
 				Name:       i.Name,
 				Dockerfile: i.DockerfilePath,
 				Image:      i.Image,
+				//Platform:   i.Platform,
 			},
 			Schedule: i.Schedule,
 			Timeout:  i.Timeout,
@@ -291,6 +293,7 @@ func (w *WorkloadInitializer) newLoadBalancedWebServiceManifest(i *ServiceProps)
 			Name:       i.Name,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
+			//Platform:   i.Platform,
 		},
 		Port: i.Port,
 		Path: "/",
@@ -310,12 +313,26 @@ func (w *WorkloadInitializer) newLoadBalancedWebServiceManifest(i *ServiceProps)
 	return manifest.NewLoadBalancedWebService(props), nil
 }
 
+func (w *WorkloadInitializer) newRequestDrivenWebServiceManifest(i *ServiceProps) *manifest.RequestDrivenWebService {
+	props := &manifest.RequestDrivenWebServiceProps{
+		WorkloadProps: &manifest.WorkloadProps{
+			Name:       i.Name,
+			Dockerfile: i.DockerfilePath,
+			Image:      i.Image,
+			//Platform:   i.Platform,
+		},
+		Port: i.Port,
+	}
+	return manifest.NewRequestDrivenWebService(props)
+}
+
 func newBackendServiceManifest(i *ServiceProps) (*manifest.BackendService, error) {
 	return manifest.NewBackendService(manifest.BackendServiceProps{
 		WorkloadProps: manifest.WorkloadProps{
 			Name:       i.Name,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
+			//Platform:   i.Platform,
 		},
 		Port:        i.Port,
 		HealthCheck: i.HealthCheck,

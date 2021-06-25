@@ -19,8 +19,15 @@ const (
 )
 
 const (
-	servicesDirName = "services"
-	jobDirName      = "jobs"
+	// AWS VPC networking configuration.
+	EnablePublicIP          = "ENABLED"
+	DisablePublicIP         = "DISABLED"
+	PublicSubnetsPlacement  = "PublicSubnets"
+	PrivateSubnetsPlacement = "PrivateSubnets"
+
+	// Platform configuration.
+	LinuxOS   = "LINUX"
+	amd64Arch = "X86_64"
 )
 
 var (
@@ -105,15 +112,55 @@ type StateMachineOpts struct {
 	Retries *int
 }
 
+// NetworkOpts holds AWS networking configuration for the workloads.
+type NetworkOpts struct {
+	AssignPublicIP string
+	SubnetsType    string
+	SecurityGroups []string
+}
+
+func defaultNetworkOpts() *NetworkOpts {
+	return &NetworkOpts{
+		AssignPublicIP: EnablePublicIP,
+		SubnetsType:    PublicSubnetsPlacement,
+	}
+}
+
+// RuntimePlatformOpts holds platform configuration.
+type RuntimePlatformOpts struct {
+	OS   string
+	Arch string
+}
+
+func defaultRuntimePlatformOpts() *RuntimePlatformOpts {
+	return &RuntimePlatformOpts{
+		OS:   LinuxOS,
+		Arch: amd64Arch,
+	}
+}
+
 // WorkloadOpts holds optional data that can be provided to enable features in a workload stack template.
 type WorkloadOpts struct {
 	// Additional options that are common between **all** workload templates.
-	Variables   map[string]string
-	Secrets     map[string]string
-	NestedStack *WorkloadNestedStackOpts // Outputs from nested stacks such as the addons stack.
-	Sidecars    []*SidecarOpts
-	LogConfig   *LogConfigOpts
-	Autoscaling *AutoscalingOpts
+	Variables          map[string]string
+	Secrets            map[string]string
+	Aliases            []string
+	Tags               map[string]string        // Used by App Runner workloads to tag App Runner service resources
+	NestedStack        *WorkloadNestedStackOpts // Outputs from nested stacks such as the addons stack.
+	Sidecars           []*SidecarOpts
+	LogConfig          *LogConfigOpts
+	Autoscaling        *AutoscalingOpts
+	CapacityProviders  []*CapacityProviderStrategy
+	DesiredCountOnSpot *int
+	Storage            *StorageOpts
+	Network            *NetworkOpts
+	ExecuteCommand     *ExecuteCommandOpts
+	EntryPoint         []string
+	Command            []string
+	DomainAlias        string
+	DockerLabels       map[string]string
+	DependsOn          map[string]string
+	Platform           *RuntimePlatformOpts
 
 	// Additional options for service templates.
 	HealthCheck         *ecs.HealthCheck
@@ -131,16 +178,34 @@ type WorkloadOpts struct {
 // ParseLoadBalancedWebService parses a load balanced web service's CloudFormation template
 // with the specified data object and returns its content.
 func (t *Template) ParseLoadBalancedWebService(data WorkloadOpts) (*Content, error) {
+	if data.Network == nil {
+		data.Network = defaultNetworkOpts()
+	}
+	if data.Platform == nil {
+		data.Platform = defaultRuntimePlatformOpts()
+	}
 	return t.parseSvc(lbWebSvcTplName, data, withSvcParsingFuncs())
 }
 
 // ParseBackendService parses a backend service's CloudFormation template with the specified data object and returns its content.
 func (t *Template) ParseBackendService(data WorkloadOpts) (*Content, error) {
+	if data.Network == nil {
+		data.Network = defaultNetworkOpts()
+	}
+	if data.Platform == nil {
+		data.Platform = defaultRuntimePlatformOpts()
+	}
 	return t.parseSvc(backendSvcTplName, data, withSvcParsingFuncs())
 }
 
 // ParseScheduledJob parses a scheduled job's Cloudformation Template
 func (t *Template) ParseScheduledJob(data WorkloadOpts) (*Content, error) {
+	if data.Network == nil {
+		data.Network = defaultNetworkOpts()
+	}
+	if data.Platform == nil {
+		data.Platform = defaultRuntimePlatformOpts()
+	}
 	return t.parseJob(scheduledJobTplName, data, withSvcParsingFuncs())
 }
 

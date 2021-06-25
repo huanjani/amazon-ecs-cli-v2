@@ -144,7 +144,17 @@ func (j *ScheduledJob) Template() (string, error) {
 		Sidecars:           sidecars,
 		ScheduleExpression: schedule,
 		StateMachine:       stateMachine,
-		LogConfig:          j.manifest.LogConfigOpts(),
+		HealthCheck:        j.manifest.ImageConfig.HealthCheckOpts(),
+		LogConfig:          convertLogging(j.manifest.Logging),
+		DockerLabels:       j.manifest.ImageConfig.DockerLabels,
+		Storage:            storage,
+		Network:            convertNetworkConfig(j.manifest.Network),
+		EntryPoint:         entrypoint,
+		Command:            command,
+		DependsOn:          dependencies,
+		Platform:           convertRuntimePlatform(),
+
+		EnvControllerLambda: envControllerLambda.String(),
 	})
 	if err != nil {
 		return "", fmt.Errorf("parse scheduled job template: %w", err)

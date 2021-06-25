@@ -85,6 +85,7 @@ type initSvcOpts struct {
 
 	// Outputs stored on successful actions.
 	manifestPath string
+	//platform     string
 
 	// Sets up Dockerfile parser using fs and input path
 	setupParser func(*initSvcOpts)
@@ -202,6 +203,7 @@ func (o *initSvcOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
+			//Platform:       o.platform,
 		},
 		Port:        o.port,
 		HealthCheck: hc,
@@ -266,6 +268,30 @@ func (o *initSvcOpts) askDockerfile() (isDfSelected bool, err error) {
 	if o.dockerfilePath != "" || o.image != "" {
 		return true, nil
 	}
+<<<<<<< Updated upstream
+=======
+	if err = o.dockerEngineValidator.CheckDockerEngineRunning(); err != nil {
+		var errDaemon *exec.ErrDockerDaemonNotResponsive
+		switch {
+		case errors.Is(err, exec.ErrDockerCommandNotFound):
+			log.Info("Docker command is not found; Copilot won't build from a Dockerfile.\n")
+			return false, nil
+		case errors.As(err, &errDaemon):
+			log.Info("Docker daemon is not responsive; Copilot won't build from a Dockerfile.\n")
+			return false, nil
+		default:
+			return false, fmt.Errorf("check if docker engine is running: %w", err)
+		}
+	}
+	//os, arch, err := o.dockerEngineValidator.GetPlatform()
+	//fmt.Println("os " + os)
+	//fmt.Println("arch " + arch)
+	//if err != nil {
+	//	return false, fmt.Errorf("get OS/Arch from docker: %w", err)
+	//}
+	//o.platform = fmt.Sprintf("%s/%s", os, arch)
+	//fmt.Println(o.platform)
+>>>>>>> Stashed changes
 	df, err := o.sel.Dockerfile(
 		fmt.Sprintf(fmtWkldInitDockerfilePrompt, color.HighlightUserInput(o.name)),
 		fmt.Sprintf(fmtWkldInitDockerfilePathPrompt, color.HighlightUserInput(o.name)),

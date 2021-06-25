@@ -25,6 +25,10 @@ func TestNewBackendSvc(t *testing.T) {
 				WorkloadProps: WorkloadProps{
 					Name:       "subscribers",
 					Dockerfile: "./subscribers/Dockerfile",
+					//Platform: PlatformConfig{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				},
 			},
 			wantedManifest: &BackendService{
@@ -59,6 +63,10 @@ func TestNewBackendSvc(t *testing.T) {
 				WorkloadProps: WorkloadProps{
 					Name:  "subscribers",
 					Image: "mockImage",
+					//Platform: PlatformConfig{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				},
 				HealthCheck: &ContainerHealthCheck{
 					Command: []string{"CMD", "curl -f http://localhost:8080 || exit 1"},
@@ -124,6 +132,10 @@ func TestBackendSvc_MarshalBinary(t *testing.T) {
 				WorkloadProps: WorkloadProps{
 					Name:       "subscribers",
 					Dockerfile: "./subscribers/Dockerfile",
+					//Platform: PlatformConfig{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				},
 			},
 			wantedTestdata: "backend-svc-nohealthcheck.yml",
@@ -133,6 +145,10 @@ func TestBackendSvc_MarshalBinary(t *testing.T) {
 				WorkloadProps: WorkloadProps{
 					Name:  "subscribers",
 					Image: "flask-sample",
+					//Platform: PlatformConfig{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				},
 				HealthCheck: &ContainerHealthCheck{
 					Command:     []string{"CMD-SHELL", "curl -f http://localhost:8080 || exit 1"},

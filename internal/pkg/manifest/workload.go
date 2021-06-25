@@ -8,11 +8,13 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/copilot-cli/internal/pkg/template"
+	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,8 +31,13 @@ var (
 
 var dockerfileDefaultName = "Dockerfile"
 
-// WorkloadTypes holds all workload manifest types.
-var WorkloadTypes = append(ServiceTypes, JobTypes...)
+// WorkloadProps contains properties for creating a new workload manifest.
+type WorkloadProps struct {
+	Name       string
+	Dockerfile string
+	Image      string
+	//Platform   PlatformConfig
+}
 
 // Workload holds the basic data that every workload manifest file needs to have.
 type Workload struct {
@@ -42,6 +49,67 @@ type Workload struct {
 type Image struct {
 	Build    BuildArgsOrString `yaml:"build"`    // Build an image from a Dockerfile.
 	Location *string           `yaml:"location"` // Use an existing image instead.
+
+	//Platform PlatformConfig    //`yaml:"platform"`
+	//Platform     PlatformArgsOrString `yaml:"platform"`        // Include OS/Arch if host OS is Windows or Linux/ARM
+	DockerLabels map[string]string `yaml:"labels,flow"`     // Apply Docker labels to the container at runtime.
+	DependsOn    map[string]string `yaml:"depends_on,flow"` // Add any sidecar dependencies.
+}
+
+type workloadTransformer struct{}
+
+// Transformer implements customized merge logic for Image field of manifest.
+// It merges `DockerLabels` and `DependsOn` in the default manager (i.e. with configurations mergo.WithOverride, mergo.WithOverwriteWithEmptyValue)
+// And then overrides both `Build` and `Location` fields at the same time with the src values, given that they are non-empty themselves.
+func (t workloadTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
+	if typ == reflect.TypeOf(Image{}) {
+		return transformImage()
+	}
+	return nil
+}
+
+func transformImage() func(dst, src reflect.Value) error {
+	return func(dst, src reflect.Value) error {
+		// Perform default merge
+		dstImage := dst.Interface().(Image)
+		srcImage := src.Interface().(Image)
+
+		err := mergo.Merge(&dstImage, srcImage, mergo.WithOverride, mergo.WithOverwriteWithEmptyValue)
+		if err != nil {
+			return err
+		}
+
+		// Perform customized merge
+		dstBuild := dst.FieldByName("Build")
+		dstLocation := dst.FieldByName("Location")
+
+		srcBuild := src.FieldByName("Build")
+		srcLocation := src.FieldByName("Location")
+
+		if !srcBuild.IsZero() || !srcLocation.IsZero() {
+			dstBuild.Set(srcBuild)
+			dstLocation.Set(srcLocation)
+		}
+		return nil
+	}
+}
+
+// ImageWithHealthcheck represents a container image with health check.
+type ImageWithHealthcheck struct {
+	Image       `yaml:",inline"`
+	HealthCheck *ContainerHealthCheck `yaml:"healthcheck"`
+}
+
+// ImageWithPortAndHealthcheck represents a container image with an exposed port and health check.
+type ImageWithPortAndHealthcheck struct {
+	ImageWithPort `yaml:",inline"`
+	HealthCheck   *ContainerHealthCheck `yaml:"healthcheck"`
+}
+
+// ImageWithPort represents a container image with an exposed port.
+type ImageWithPort struct {
+	Image `yaml:",inline"`
+	Port  *uint16 `yaml:"port"`
 }
 
 // GetLocation returns the location of the image.
@@ -178,6 +246,99 @@ func (b *DockerBuildArgs) isEmpty() bool {
 	return false
 }
 
+// PlatformArgsOrString is a custom type which supports unmarshaling yaml which
+// can either be of type string or type PlatformArgs.
+//type PlatformArgsOrString struct {
+//	PlatformString *string
+//	PlatformArgs   PlatformArgs
+//}
+//
+//func (p *PlatformArgsOrString) isEmpty() bool {
+//	if aws.StringValue(p.PlatformString) == "" && p.PlatformArgs.isEmpty() {
+//		return true
+//	}
+//	return false
+//}
+
+// UnmarshalYAML overrides the default YAML unmarshaling logic for the PlatformArgsOrString
+// struct, allowing it to perform more complex unmarshaling behavior.
+// This method implements the yaml.Unmarshaler (v2) interface.
+//func (p *PlatformArgsOrString) UnmarshalYAML(unmarshal func(interface{}) error) error {
+//	if err := unmarshal(&p.PlatformArgs); err != nil {
+//		switch err.(type) {
+//		case *yaml.TypeError:
+//			break
+//		default:
+//			return err
+//		}
+//	}
+//
+//	if !p.PlatformArgs.isEmpty() {
+//		// Unmarshaled successfully to p.PlatformArgs, unset p.PlatformString, and return.
+//		p.PlatformString = nil
+//		return nil
+//	}
+//
+//	if err := unmarshal(&p.PlatformString); err != nil {
+//		return errUnmarshalBuildOpts
+//	}
+//	return nil
+//}
+
+// PlatformArgs represents the specifics of a target OS. For more information, see: TKTKTTK.
+//type PlatformArgs struct {
+//	OSFamily *string `yaml:"osfamily,omitempty"`
+//	Arch     *string `yaml:"architecture,omitempty"`
+//}
+//
+//func (p *PlatformArgs) isEmpty() bool {
+//	if p.OSFamily == nil && p.Arch == nil {
+//		return true
+//	}
+//	return false
+//}
+
+// ExecuteCommand is a custom type which supports unmarshaling yaml which
+// can either be of type bool or type ExecuteCommandConfig.
+type ExecuteCommand struct {
+	Enable *bool
+	Config ExecuteCommandConfig
+}
+
+// UnmarshalYAML overrides the default YAML unmarshaling logic for the BuildArgsOrString
+// struct, allowing it to perform more complex unmarshaling behavior.
+// This method implements the yaml.Unmarshaler (v2) interface.
+func (e *ExecuteCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if err := unmarshal(&e.Config); err != nil {
+		switch err.(type) {
+		case *yaml.TypeError:
+			break
+		default:
+			return err
+		}
+	}
+
+	if !e.Config.IsEmpty() {
+		return nil
+	}
+
+	if err := unmarshal(&e.Enable); err != nil {
+		return errUnmarshalExec
+	}
+	return nil
+}
+
+// ExecuteCommandConfig represents the configuration for ECS Execute Command.
+type ExecuteCommandConfig struct {
+	Enable *bool `yaml:"enable"`
+	// Reserved for future use.
+}
+
+// IsEmpty returns whether ExecuteCommandConfig is empty.
+func (e ExecuteCommandConfig) IsEmpty() bool {
+	return e.Enable == nil
+}
+
 // Logging holds configuration for Firelens to route your logs.
 type Logging struct {
 	Image          *string           `yaml:"image"`
@@ -217,10 +378,29 @@ type Sidecar struct {
 	Sidecars map[string]*SidecarConfig `yaml:"sidecars"`
 }
 
-// Options converts the workload's sidecar configuration into a format parsable by the templates pkg.
-func (s *Sidecar) Options() ([]*template.SidecarOpts, error) {
-	if s.Sidecars == nil {
-		return nil, nil
+// NetworkConfig represents options for network connection to AWS resources within a VPC.
+type NetworkConfig struct {
+	VPC *vpcConfig `yaml:"vpc"`
+}
+
+//PlatformConfig represents operating system and architecture variables.
+//type PlatformConfig struct {
+//	OS   string
+//	Arch string
+//}
+
+// UnmarshalYAML ensures that a NetworkConfig always defaults to public subnets.
+// If the user specified a placement that's not valid then throw an error.
+func (c *NetworkConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type networkWithDefaults NetworkConfig
+	defaultVPCConf := &vpcConfig{
+		Placement: stringP(PublicSubnetPlacement),
+	}
+	conf := networkWithDefaults{
+		VPC: defaultVPCConf,
+	}
+	if err := unmarshal(&conf); err != nil {
+		return err
 	}
 	var sidecars []*template.SidecarOpts
 	for name, config := range s.Sidecars {

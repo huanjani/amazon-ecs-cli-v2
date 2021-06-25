@@ -173,6 +173,16 @@ func TestLoadBalancedWebService_Template(t *testing.T) {
 					RulePriorityLambda:  "lambda",
 					DesiredCountLambda:  "something",
 					EnvControllerLambda: "something",
+					Network: &template.NetworkOpts{
+						AssignPublicIP: template.EnablePublicIP,
+						SubnetsType:    template.PublicSubnetsPlacement,
+					},
+					EntryPoint: []string{"/bin/echo", "hello"},
+					Command:    []string{"world"},
+					//Platform: &template.RuntimePlatformOpts{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				}).Return(&template.Content{Buffer: bytes.NewBufferString("template")}, nil)
 
 				addons := mockTemplater{err: &addon.ErrAddonsDirNotExist{}}
@@ -201,6 +211,16 @@ func TestLoadBalancedWebService_Template(t *testing.T) {
 					RulePriorityLambda:  "lambda",
 					DesiredCountLambda:  "something",
 					EnvControllerLambda: "something",
+					Network: &template.NetworkOpts{
+						AssignPublicIP: template.EnablePublicIP,
+						SubnetsType:    template.PublicSubnetsPlacement,
+					},
+					EntryPoint: []string{"/bin/echo", "hello"},
+					Command:    []string{"world"},
+					//Platform: &template.RuntimePlatformOpts{
+					//	OS:   "LINUX",
+					//	Arch: "X86_64",
+					//},
 				}).Return(&template.Content{Buffer: bytes.NewBufferString("template")}, nil)
 				addons := mockTemplater{
 					tpl: `Resources:

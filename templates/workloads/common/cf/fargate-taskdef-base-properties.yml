@@ -1,4 +1,7 @@
 Family: !Join ['', [!Ref AppName, '-', !Ref EnvName, '-', !Ref WorkloadName]]
+RuntimePlatform:
+  OperatingSystemFamily: {{.Platform.OS}}
+  CpuArchitecture: {{.Platform.Arch}}
 NetworkMode: awsvpc
 RequiresCompatibilities:
   - FARGATE

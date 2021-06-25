@@ -484,8 +484,70 @@ type roleDeleter interface {
 	DeleteRole(string) error
 }
 
-type activeWorkloadTasksLister interface {
-	ListActiveWorkloadTasks(app, env, workload string) (clusterARN string, taskARNs []string, err error)
+type serviceDescriber interface {
+	DescribeService(app, env, svc string) (*ecs.ServiceDesc, error)
+}
+
+type apprunnerServiceDescriber interface {
+	ServiceARN() (string, error)
+}
+
+type ecsCommandExecutor interface {
+	ExecuteCommand(in awsecs.ExecuteCommandInput) error
+}
+
+type ssmPluginManager interface {
+	ValidateBinary() error
+	InstallLatestBinary() error
+}
+
+type taskStopper interface {
+	StopOneOffTasks(app, env, family string) error
+	StopDefaultClusterTasks(familyName string) error
+	StopWorkloadTasks(app, env, workload string) error
+}
+
+type serviceLinkedRoleCreator interface {
+	CreateECSServiceLinkedRole() error
+}
+
+type roleTagsLister interface {
+	ListRoleTags(string) (map[string]string, error)
+}
+
+type roleManager interface {
+	roleTagsLister
+	roleDeleter
+	serviceLinkedRoleCreator
+}
+
+type stackExistChecker interface {
+	Exists(string) (bool, error)
+}
+
+type runningTaskSelector interface {
+	RunningTask(prompt, help string, opts ...selector.TaskOpts) (*awsecs.Task, error)
+}
+
+type dockerEngineValidator interface {
+	CheckDockerEngineRunning() error
+	//GetPlatform() (string, string, error)
+}
+
+type codestar interface {
+	GetConnectionARN(string) (string, error)
+}
+
+type publicIPGetter interface {
+	PublicIP(ENI string) (string, error)
+}
+
+type cliStringer interface {
+	CLIString() string
+}
+
+type secretPutter interface {
+	PutSecret(in ssm.PutSecretInput) (*ssm.PutSecretOutput, error)
 }
 
 type tasksStopper interface {

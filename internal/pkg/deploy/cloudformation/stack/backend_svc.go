@@ -84,14 +84,26 @@ func (s *BackendService) Template() (string, error) {
 		return "", fmt.Errorf("convert the Auto Scaling configuration for service %s: %w", s.name, err)
 	}
 	content, err := s.parser.ParseBackendService(template.WorkloadOpts{
-		Variables:          s.manifest.BackendServiceConfig.Variables,
-		Secrets:            s.manifest.BackendServiceConfig.Secrets,
-		NestedStack:        outputs,
-		Sidecars:           sidecars,
-		Autoscaling:        autoscaling,
-		HealthCheck:        s.manifest.BackendServiceConfig.ImageConfig.HealthCheckOpts(),
-		LogConfig:          s.manifest.LogConfigOpts(),
-		DesiredCountLambda: desiredCountLambda.String(),
+		Variables:           s.manifest.BackendServiceConfig.Variables,
+		Secrets:             s.manifest.BackendServiceConfig.Secrets,
+		NestedStack:         outputs,
+		Sidecars:            sidecars,
+		Autoscaling:         autoscaling,
+		CapacityProviders:   capacityProviders,
+		DesiredCountOnSpot:  desiredCountOnSpot,
+		ExecuteCommand:      convertExecuteCommand(&s.manifest.ExecuteCommand),
+		WorkloadType:        manifest.BackendServiceType,
+		HealthCheck:         s.manifest.BackendServiceConfig.ImageConfig.HealthCheckOpts(),
+		LogConfig:           convertLogging(s.manifest.Logging),
+		DockerLabels:        s.manifest.ImageConfig.DockerLabels,
+		DesiredCountLambda:  desiredCountLambda.String(),
+		EnvControllerLambda: envControllerLambda.String(),
+		Storage:             storage,
+		Network:             convertNetworkConfig(s.manifest.Network),
+		EntryPoint:          entrypoint,
+		Command:             command,
+		DependsOn:           dependencies,
+		//Platform:            convertRuntimePlatform(s.manifest.Platform),
 	})
 	if err != nil {
 		return "", fmt.Errorf("parse backend service template: %w", err)

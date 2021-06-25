@@ -29,7 +29,7 @@ type BackendService struct {
 	BackendServiceConfig `yaml:",inline"`
 	// Use *BackendServiceConfig because of https://github.com/imdario/mergo/issues/146
 	Environments map[string]*BackendServiceConfig `yaml:",flow"`
-
+	//Platform     *PlatformConfig                  // `yaml:"platform"`
 	parser template.Parser
 }
 

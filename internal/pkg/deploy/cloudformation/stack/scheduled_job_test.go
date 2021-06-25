@@ -53,6 +53,17 @@ func TestScheduledJob_Template(t *testing.T) {
 						Timeout: aws.Int(5400),
 						Retries: aws.Int(3),
 					},
+					Network: &template.NetworkOpts{
+						AssignPublicIP: template.EnablePublicIP,
+						SubnetsType:    template.PublicSubnetsPlacement,
+					},
+					EntryPoint:          []string{"/bin/echo", "hello"},
+					Command:             []string{"world"},
+					EnvControllerLambda: "something",
+					Platform: &template.RuntimePlatformOpts{
+						OS:   "LINUX",
+						Arch: "X86_64",
+					},
 				})).Return(&template.Content{Buffer: bytes.NewBufferString("template")}, nil)
 				addons := mockTemplater{err: &addon.ErrAddonsDirNotExist{}}
 				j.parser = m
@@ -74,6 +85,17 @@ func TestScheduledJob_Template(t *testing.T) {
 					StateMachine: &template.StateMachineOpts{
 						Timeout: aws.Int(5400),
 						Retries: aws.Int(3),
+					},
+					Network: &template.NetworkOpts{
+						AssignPublicIP: template.EnablePublicIP,
+						SubnetsType:    template.PublicSubnetsPlacement,
+					},
+					EntryPoint:          []string{"/bin/echo", "hello"},
+					Command:             []string{"world"},
+					EnvControllerLambda: "something",
+					Platform: &template.RuntimePlatformOpts{
+						OS:   "LINUX",
+						Arch: "X86_64",
 					},
 				})).Return(&template.Content{Buffer: bytes.NewBufferString("template")}, nil)
 				addons := mockTemplater{

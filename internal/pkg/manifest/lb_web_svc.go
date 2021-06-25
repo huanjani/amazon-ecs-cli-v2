@@ -36,6 +36,7 @@ type LoadBalancedWebService struct {
 	LoadBalancedWebServiceConfig `yaml:",inline"`
 	// Use *LoadBalancedWebServiceConfig because of https://github.com/imdario/mergo/issues/146
 	Environments map[string]*LoadBalancedWebServiceConfig `yaml:",flow"` // Fields to override per environment.
+	//Platform     *PlatformConfig                          `yaml:"platform,omitempty"`
 
 	parser template.Parser
 }

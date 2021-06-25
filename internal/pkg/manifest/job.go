@@ -30,6 +30,7 @@ type ScheduledJob struct {
 	Workload           `yaml:",inline"`
 	ScheduledJobConfig `yaml:",inline"`
 	Environments       map[string]*ScheduledJobConfig `yaml:",flow"`
+	//Platform           *PlatformConfig                //`yaml:"platform"`
 
 	parser template.Parser
 }

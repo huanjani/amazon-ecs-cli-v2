@@ -124,7 +124,13 @@ func (s *LoadBalancedWebService) Template() (string, error) {
 		RulePriorityLambda:  rulePriorityLambda.String(),
 		DesiredCountLambda:  desiredCountLambda.String(),
 		EnvControllerLambda: envControllerLambda.String(),
-	})
+		Storage:             storage,
+		Network:             convertNetworkConfig(s.manifest.Network),
+		EntryPoint:          entrypoint,
+		Command:             command,
+		DependsOn:           dependencies,
+		Platform:            convertRuntimePlatform(),
+git l	})
 	if err != nil {
 		return "", err
 	}
