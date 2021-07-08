@@ -158,9 +158,6 @@ func (c DockerCommand) CheckDockerEngineRunning() error {
 	if err != nil {
 		return fmt.Errorf("get docker info: %w", err)
 	}
-	if c.buf != nil {
-		buf = c.buf
-	}
 	// Trim redundant prefix and suffix. For example: '{"ServerErrors":["Cannot connect...}'\n returns
 	// {"ServerErrors":["Cannot connect...}
 	out := strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(buf.String()), "'"), "'")
@@ -180,33 +177,27 @@ func (c DockerCommand) CheckDockerEngineRunning() error {
 }
 
 // GetPlatform will run the `docker version` command to get the OS/Arch.
-func (c DockerCommand) GetPlatform() (operatingSystem, architecture string, err error) {
-	var os string
-	var arch string
+func (c DockerCommand) GetPlatform() (os, arch string, err error) {
 	if _, err := exec.LookPath("docker"); err != nil {
 		return "", "", ErrDockerCommandNotFound
 	}
-	osBuf := &bytes.Buffer{}
-	err = c.runner.Run("docker", []string{"version", "-f", "'{{.Server.Os}}'"}, Stdout(osBuf))
+	buf := &bytes.Buffer{}
+	err = c.runner.Run("docker", []string{"version", "-f", "'{{json .Server}}'"}, Stdout(buf))
 	if err != nil {
-		return "", "", fmt.Errorf("get docker os: %w", err)
+		return "", "", fmt.Errorf("run docker version: %w", err)
 	}
-	if c.buf != nil {
-		osBuf = c.buf
-	}
-	os = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(osBuf.String()), "'"), "'")
 
-	archBuf := &bytes.Buffer{}
-	err = c.runner.Run("docker", []string{"version", "-f", "'{{.Server.Arch}}'"}, Stdout(archBuf))
-	if err != nil {
-		return "", "", fmt.Errorf("get docker architecture: %w", err)
+	out := strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(buf.String()), "'"), "'")
+	type dockerServer struct {
+		OS   string `json:"Os"`
+		Arch string `json:"Arch"`
 	}
-	if c.buf != nil {
-		archBuf = c.buf
-	}
-	arch = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(archBuf.String()), "'"), "'")
+	var platform dockerServer
+	if err := json.Unmarshal([]byte(out), &platform); err != nil {
+		return "", "", fmt.Errorf("unmarshal docker platform: %w", err)
 
-	return os, arch, nil
+	}
+	return platform.OS, platform.Arch, nil
 }
 
 func imageName(uri, tag string) string {

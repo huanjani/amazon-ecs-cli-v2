@@ -188,7 +188,7 @@ func (o *initJobOpts) Execute() error {
 		}
 	}
 
-	o.os, o.arch, err = o.dockerPlatform()
+	o.os, o.arch, err = dockerPlatform(o.dockerEngine, o.image)
 	if err != nil {
 		return err
 	}

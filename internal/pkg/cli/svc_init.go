@@ -223,10 +223,11 @@ func (o *initSvcOpts) Execute() error {
 		}
 	}
 
-	o.os, o.arch, err = o.dockerPlatform()
+	o.os, o.arch, err = dockerPlatform(o.dockerEngine, o.image)
 	if err != nil {
 		return err
 	}
+
 	manifestPath, err := o.init.Service(&initialize.ServiceProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,
@@ -428,10 +429,10 @@ func parseHealthCheck(df dockerfileParser) (*manifest.ContainerHealthCheck, erro
 	}, nil
 }
 
-func (o initSvcOpts) dockerPlatform() (os, arch string, err error) {
+func dockerPlatform(engine dockerEngine, image string) (os, arch string, err error) {
 	os, arch = runtime.GOOS, runtime.GOARCH
-	if o.image == "" {
-		os, arch, err = o.dockerEngine.GetPlatform()
+	if image == "" {
+		os, arch, err = engine.GetPlatform()
 		if err != nil {
 			return "", "", fmt.Errorf("get os/arch from docker: %w", err)
 		}
