@@ -42,6 +42,7 @@ type deployWkldVars struct {
 	appName      string
 	name         string
 	envName      string
+	platform     string
 	imageTag     string
 	resourceTags map[string]string
 }
@@ -152,6 +153,8 @@ func (o *deploySvcOpts) Execute() error {
 		return fmt.Errorf("get service configuration: %w", err)
 	}
 	o.targetSvc = svc
+	// fetch and validate platform from service config here
+	o.platform = svc.Platform
 
 	if err := o.configureClients(); err != nil {
 		return err
@@ -198,6 +201,17 @@ func (o *deploySvcOpts) validateSvcName() error {
 func (o *deploySvcOpts) validateEnvName() error {
 	if _, err := targetEnv(o.store, o.appName, o.envName); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (o *deploySvcOpts) validatePlatform() error {
+	os := strings.Split(o.platform, "/")[0]
+	fmt.Println("split os: ", os)
+	arch := strings.Split(o.platform, "/")[1]
+	fmt.Println("split arch: ", arch)
+	if os != "linux" || arch != exec.Amd64Arch {
+		return errors.New("BAD")
 	}
 	return nil
 }
@@ -301,6 +315,8 @@ func (o *deploySvcOpts) configureContainerImage() error {
 	if err != nil {
 		return err
 	}
+	buildArg.Platform = o.platform
+
 	digest, err := o.imageBuilderPusher.BuildAndPush(exec.NewDockerCommand(), buildArg)
 	if err != nil {
 		return fmt.Errorf("build and push image: %w", err)
