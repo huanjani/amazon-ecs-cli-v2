@@ -468,10 +468,10 @@ func TestSvcInitOpts_Ask(t *testing.T) {
 				dockerfile: func(s string) dockerfileParser {
 					return mockDockerfile
 				},
-				df:                    mockDockerfile,
-				prompt:                mockPrompt,
-				sel:                   mockSel,
-				dockerEngineValidator: mockValidator,
+				df:           mockDockerfile,
+				prompt:       mockPrompt,
+				sel:          mockSel,
+				dockerEngine: mockValidator,
 			}
 			tc.mockSel(mockSel)
 			tc.mockPrompt(mockPrompt)
@@ -528,10 +528,7 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:           "frontend",
 						Type:           "Load Balanced Web Service",
 						DockerfilePath: "./Dockerfile",
-						Platform: &manifest.PlatformConfig{
-							OS:   "linux",
-							Arch: "amd64",
-						},
+						Platform:       "linux/amd64",
 					},
 					Port: 80,
 				}).Return("manifest/path", nil)
@@ -558,10 +555,7 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:           "frontend",
 						Type:           "Backend Service",
 						DockerfilePath: "./Dockerfile",
-						Platform: &manifest.PlatformConfig{
-							OS:   "linux",
-							Arch: "amd64",
-						},
+						Platform:       "linux/amd64",
 					},
 				}).Return("manifest/path", nil)
 			},
@@ -584,14 +578,11 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 			mockSvcInit: func(m *mocks.MocksvcInitializer) {
 				m.EXPECT().Service(&initialize.ServiceProps{
 					WorkloadProps: initialize.WorkloadProps{
-						App:   "sample",
-						Name:  "backend",
-						Type:  "Backend Service",
-						Image: "nginx:latest",
-						Platform: &manifest.PlatformConfig{
-							OS:   "linux",
-							Arch: "amd64",
-						},
+						App:      "sample",
+						Name:     "backend",
+						Type:     "Backend Service",
+						Image:    "nginx:latest",
+						Platform: "linux/amd64",
 					},
 				}).Return("manifest/path", nil)
 			},
@@ -612,14 +603,11 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 			mockSvcInit: func(m *mocks.MocksvcInitializer) {
 				m.EXPECT().Service(&initialize.ServiceProps{
 					WorkloadProps: initialize.WorkloadProps{
-						App:   "sample",
-						Name:  "frontend",
-						Type:  "Load Balanced Web Service",
-						Image: "nginx:latest",
-						Platform: &manifest.PlatformConfig{
-							OS:   "linux",
-							Arch: "amd64",
-						},
+						App:      "sample",
+						Name:     "frontend",
+						Type:     "Load Balanced Web Service",
+						Image:    "nginx:latest",
+						Platform: "linux/amd64",
 					},
 				}).Return("manifest/path", nil)
 			},
@@ -681,8 +669,8 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 				dockerfile: func(s string) dockerfileParser {
 					return mockDockerfile
 				},
-				df:                    mockDockerfile,
-				dockerEngineValidator: mockDockerValidator,
+				df:           mockDockerfile,
+				dockerEngine: mockDockerValidator,
 			}
 
 			// WHEN

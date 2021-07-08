@@ -6,6 +6,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"runtime"
 	"strconv"
 
 	"github.com/aws/copilot-cli/internal/pkg/aws/sessions"
@@ -85,11 +86,11 @@ type initSvcOpts struct {
 	initSvcVars
 
 	// Interfaces to interact with dependencies.
-	fs                    afero.Fs
-	init                  svcInitializer
-	prompt                prompter
-	dockerEngineValidator dockerEngineValidator
-	sel                   dockerfileSelector
+	fs           afero.Fs
+	init         svcInitializer
+	prompt       prompter
+	dockerEngine dockerEngine
+	sel          dockerfileSelector
 
 	// Outputs stored on successful actions.
 	manifestPath string
@@ -132,11 +133,11 @@ func newInitSvcOpts(vars initSvcVars) (*initSvcOpts, error) {
 	opts := &initSvcOpts{
 		initSvcVars: vars,
 
-		fs:                    fs,
-		init:                  initSvc,
-		prompt:                prompter,
-		sel:                   sel,
-		dockerEngineValidator: exec.NewDockerCommand(),
+		fs:           fs,
+		init:         initSvc,
+		prompt:       prompter,
+		sel:          sel,
+		dockerEngine: exec.NewDockerCommand(),
 	}
 	opts.dockerfile = func(path string) dockerfileParser {
 		if opts.df != nil {
@@ -222,11 +223,10 @@ func (o *initSvcOpts) Execute() error {
 		}
 	}
 
-	o.os, o.arch, err = o.getOSArch()
+	o.os, o.arch, err = o.dockerPlatform()
 	if err != nil {
 		return err
 	}
-
 	manifestPath, err := o.init.Service(&initialize.ServiceProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,
@@ -234,10 +234,7 @@ func (o *initSvcOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
-			Platform: &manifest.PlatformConfig{
-				OS:   o.os,
-				Arch: o.arch,
-			},
+			Platform:       stringifyPlatform(o.os, o.arch),
 		},
 		Port:        o.port,
 		HealthCheck: hc,
@@ -328,7 +325,7 @@ func (o *initSvcOpts) askDockerfile() (isDfSelected bool, err error) {
 	if o.dockerfilePath != "" || o.image != "" {
 		return true, nil
 	}
-	if err = o.dockerEngineValidator.CheckDockerEngineRunning(); err != nil {
+	if err = o.dockerEngine.CheckDockerEngineRunning(); err != nil {
 		var errDaemon *exec.ErrDockerDaemonNotResponsive
 		switch {
 		case errors.Is(err, exec.ErrDockerCommandNotFound):
@@ -431,18 +428,26 @@ func parseHealthCheck(df dockerfileParser) (*manifest.ContainerHealthCheck, erro
 	}, nil
 }
 
-func (o initSvcOpts) getOSArch() (os, arch string, err error) {
-	os, arch, err = o.dockerEngineValidator.GetPlatform()
-	if err != nil {
-		return "", "", fmt.Errorf("get os/arch from docker: %w", err)
+func (o initSvcOpts) dockerPlatform() (os, arch string, err error) {
+	os, arch = runtime.GOOS, runtime.GOARCH
+	if o.image == "" {
+		os, arch, err = o.dockerEngine.GetPlatform()
+		if err != nil {
+			return "", "", fmt.Errorf("get os/arch from docker: %w", err)
+		}
 	}
-	// Until we target X86_64 for ARM architectures, log a warning.
-	if arch == "arm" || arch == "arm64" {
-		log.Warningf("Architecture type %s is currently unsupported. To deploy, run %s\n", arch, "`DOCKER_DEFAULT_PLATFORM=linux/amd64 copilot svc deploy`")
+	// Log a message informing ARM arch users of platform for build.
+	if arch == exec.ArmArch || arch == exec.Arm64Arch {
+		log.Infof("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
+		arch = exec.Amd64Arch
 		return os, arch, nil
 	}
 
 	return os, arch, nil
+}
+
+func stringifyPlatform(os, arch string) string {
+	return fmt.Sprintf("%s/%s", os, arch)
 }
 
 func svcTypePromptOpts() []prompt.Option {

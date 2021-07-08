@@ -37,9 +37,10 @@ type BuildArguments struct {
 	URI        string            // Required. Location of ECR Repo. Used to generate image name in conjunction with tag.
 	Tags       []string          // Optional. List of tags to apply to the image besides "latest".
 	Dockerfile string            // Required. Dockerfile to pass to `docker build` via --file flag.
-	Context    string            // Optional. Build context directory to pass to `docker build`
-	Target     string            // Optional. The target build stage to pass to `docker build`
+	Context    string            // Optional. Build context directory to pass to `docker build`.
+	Target     string            // Optional. The target build stage to pass to `docker build`.
 	CacheFrom  []string          // Optional. Images to consider as cache sources to pass to `docker build`
+	Platform   string            // Optional. OS/Arch to pass to `docker build`.
 	Args       map[string]string // Optional. Build args to pass via `--build-arg` flags. Equivalent to ARG directives in dockerfile.
 }
 
@@ -50,6 +51,13 @@ type dockerConfig struct {
 
 const (
 	credStoreECRLogin = "ecr-login" // set on `credStore` attribute in docker configuration file
+)
+
+// Architectures that receive special handling.
+const (
+	ArmArch   = "arm"
+	Arm64Arch = "arm64"
+	Amd64Arch = "amd64"
 )
 
 // Build will run a `docker build` command for the given ecr repo URI and build arguments.
@@ -67,19 +75,24 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 		args = append(args, "-t", imageName(in.URI, tag))
 	}
 
-	// Add cache from options
+	// Add cache from options.
 	for _, imageFrom := range in.CacheFrom {
 		args = append(args, "--cache-from", imageFrom)
 	}
 
-	// Add target option
+	// Add target option.
 	if in.Target != "" {
 		args = append(args, "--target", in.Target)
 	}
 
-	// Add the "args:" override section from manifest to the docker build call
+	// Add platform option.
+	if in.Platform != "" {
+		args = append(args, "--platform", in.Platform)
+	}
 
-	// Collect the keys in a slice to sort for test stability
+	// Add the "args:" override section from manifest to the docker build call.
+
+	// Collect the keys in a slice to sort for test stability.
 	var keys []string
 	for k := range in.Args {
 		keys = append(keys, k)

@@ -6,6 +6,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"runtime"
 
 	"github.com/aws/copilot-cli/internal/pkg/aws/sessions"
 	"github.com/aws/copilot-cli/internal/pkg/cli/group"
@@ -54,15 +55,17 @@ type initJobOpts struct {
 	initJobVars
 
 	// Interfaces to interact with dependencies.
-	fs                    afero.Fs
-	store                 store
-	init                  jobInitializer
-	prompt                prompter
-	sel                   initJobSelector
-	dockerEngineValidator dockerEngineValidator
+	fs           afero.Fs
+	store        store
+	init         jobInitializer
+	prompt       prompter
+	sel          initJobSelector
+	dockerEngine dockerEngine
 
 	// Outputs stored on successful actions.
 	manifestPath string
+	os           string
+	arch         string
 
 	// Init a Dockerfile parser using fs and input path
 	initParser func(string) dockerfileParser
@@ -99,12 +102,12 @@ func newInitJobOpts(vars initJobVars) (*initJobOpts, error) {
 	return &initJobOpts{
 		initJobVars: vars,
 
-		fs:                    fs,
-		store:                 store,
-		init:                  jobInitter,
-		prompt:                prompter,
-		sel:                   sel,
-		dockerEngineValidator: exec.NewDockerCommand(),
+		fs:           fs,
+		store:        store,
+		init:         jobInitter,
+		prompt:       prompter,
+		sel:          sel,
+		dockerEngine: exec.NewDockerCommand(),
 		initParser: func(path string) dockerfileParser {
 			return exec.NewDockerfile(fs, path)
 		},
@@ -184,6 +187,12 @@ func (o *initJobOpts) Execute() error {
 			log.Warningf("Cannot parse the HEALTHCHECK instruction from the Dockerfile: %v\n", err)
 		}
 	}
+
+	o.os, o.arch, err = o.dockerPlatform()
+	if err != nil {
+		return err
+	}
+
 	manifestPath, err := o.init.Job(&initialize.JobProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,
@@ -191,6 +200,7 @@ func (o *initJobOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
+			Platform:       stringifyPlatform(o.os, o.arch),
 		},
 
 		Schedule:    o.schedule,
@@ -262,7 +272,7 @@ func (o *initJobOpts) askDockerfile() (isDfSelected bool, err error) {
 	if o.dockerfilePath != "" || o.image != "" {
 		return true, nil
 	}
-	if err = o.dockerEngineValidator.CheckDockerEngineRunning(); err != nil {
+	if err = o.dockerEngine.CheckDockerEngineRunning(); err != nil {
 		var errDaemon *exec.ErrDockerDaemonNotResponsive
 		switch {
 		case errors.Is(err, exec.ErrDockerCommandNotFound):
@@ -321,6 +331,24 @@ func jobTypePromptOpts() []prompt.Option {
 		})
 	}
 	return options
+}
+
+func (o initJobOpts) dockerPlatform() (os, arch string, err error) {
+	os, arch = runtime.GOOS, runtime.GOARCH
+	if o.image == "" {
+		os, arch, err = o.dockerEngine.GetPlatform()
+		if err != nil {
+			return "", "", fmt.Errorf("get os/arch from docker: %w", err)
+		}
+	}
+	// Log a message informing ARM arch users of platform for build.
+	if arch == "arm" || arch == "arm64" {
+		log.Infof("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
+		arch = "amd64"
+		return os, arch, nil
+	}
+
+	return os, arch, nil
 }
 
 // buildJobInitCmd builds the command for creating a new job.

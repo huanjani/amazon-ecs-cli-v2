@@ -64,8 +64,9 @@ type WorkloadProps struct {
 
 // Workload holds the basic data that every workload manifest file needs to have.
 type Workload struct {
-	Name *string `yaml:"name"`
-	Type *string `yaml:"type"` // must be one of the supported manifest types.
+	Name     *string `yaml:"name"`
+	Type     *string `yaml:"type"`               // must be one of the supported manifest types.
+	Platform *string `yaml:"platform,omitempty"` // must be one of the supported os/arch types.
 }
 
 // Image represents the workload's container image.
@@ -166,7 +167,8 @@ func (i *Image) BuildConfig(rootDirectory string) *DockerBuildArgs {
 		Context:    context,
 		Args:       i.args(),
 		Target:     i.target(),
-		CacheFrom:  i.cacheFrom(),
+		//Platform: ,
+		CacheFrom: i.cacheFrom(),
 	}
 }
 
@@ -349,7 +351,8 @@ type DockerBuildArgs struct {
 	Dockerfile *string           `yaml:"dockerfile,omitempty"`
 	Args       map[string]string `yaml:"args,omitempty"`
 	Target     *string           `yaml:"target,omitempty"`
-	CacheFrom  []string          `yaml:"cache_from,omitempty"`
+	//Platform   *string           `yaml:"platform,omitempty`
+	CacheFrom []string `yaml:"cache_from,omitempty"`
 }
 
 func (b *DockerBuildArgs) isEmpty() bool {
@@ -456,10 +459,10 @@ type NetworkConfig struct {
 }
 
 // PlatformConfig represents operating system and architecture specifications.
-type PlatformConfig struct {
-	OS   string `yaml:"os"`
-	Arch string `yaml:"architecture"`
-}
+//type PlatformConfig struct {
+//	OS   string `yaml:"os"`
+//	Arch string `yaml:"architecture"`
+//}
 
 // UnmarshalYAML ensures that a NetworkConfig always defaults to public subnets.
 // If the user specified a placement that's not valid then throw an error.

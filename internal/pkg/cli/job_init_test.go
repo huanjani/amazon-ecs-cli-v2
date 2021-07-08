@@ -444,10 +444,10 @@ func TestJobInitOpts_Ask(t *testing.T) {
 					},
 					schedule: tc.inJobSchedule,
 				},
-				fs:                    &afero.Afero{Fs: afero.NewMemMapFs()},
-				sel:                   mockSel,
-				dockerEngineValidator: mockValidator,
-				prompt:                mockPrompt,
+				fs:           &afero.Afero{Fs: afero.NewMemMapFs()},
+				sel:          mockSel,
+				dockerEngine: mockValidator,
+				prompt:       mockPrompt,
 			}
 
 			tc.mockFileSystem(opts.fs)
