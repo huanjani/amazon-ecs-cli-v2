@@ -227,7 +227,6 @@ func (o *initSvcOpts) Execute() error {
 	if err != nil {
 		return err
 	}
-
 	manifestPath, err := o.init.Service(&initialize.ServiceProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,
@@ -235,7 +234,7 @@ func (o *initSvcOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
-			Platform:       stringifyPlatform(o.os, o.arch),
+			//Platform:       stringifyPlatform(o.os, o.arch),
 		},
 		Port:        o.port,
 		HealthCheck: hc,

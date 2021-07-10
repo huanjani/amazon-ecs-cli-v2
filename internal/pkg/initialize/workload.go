@@ -66,7 +66,7 @@ type WorkloadProps struct {
 	Name           string
 	DockerfilePath string
 	Image          string
-	Platform       string
+	//Platform       string
 }
 
 // JobProps contains the information needed to represent a Job.
@@ -299,6 +299,7 @@ func (w *WorkloadInitializer) newLoadBalancedWebServiceManifest(i *ServiceProps)
 			Name:       i.Name,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
+			//Platform:   manifest.Platform{OsArch: &i.Platform},
 		},
 		Port:        i.Port,
 		HealthCheck: i.HealthCheck,

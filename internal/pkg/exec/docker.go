@@ -53,8 +53,9 @@ const (
 	credStoreECRLogin = "ecr-login" // set on `credStore` attribute in docker configuration file
 )
 
-// Architectures that receive special handling.
+// Operating systems and architectures that receive special handling.
 const (
+	LinuxOS   = "linux"
 	ArmArch   = "arm"
 	Arm64Arch = "arm64"
 	Amd64Arch = "amd64"

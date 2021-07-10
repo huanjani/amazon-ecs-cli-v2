@@ -5,8 +5,11 @@ package manifest
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"time"
+
+	"github.com/aws/copilot-cli/internal/pkg/exec"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/copilot-cli/internal/pkg/template"
@@ -94,6 +97,9 @@ func newDefaultLoadBalancedWebService() *LoadBalancedWebService {
 	return &LoadBalancedWebService{
 		Workload: Workload{
 			Type: aws.String(LoadBalancedWebServiceType),
+			Platform: Platform{
+				OsArch: stringP(fmt.Sprintf("%s/%s", exec.LinuxOS, exec.Amd64Arch)),
+			},
 		},
 		LoadBalancedWebServiceConfig: LoadBalancedWebServiceConfig{
 			ImageConfig: ImageWithPortAndHealthcheck{},
@@ -144,7 +150,9 @@ func (s *LoadBalancedWebService) BuildRequired() (bool, error) {
 
 // BuildArgs returns a docker.BuildArguments object given a ws root directory.
 func (s *LoadBalancedWebService) BuildArgs(wsRoot string) *DockerBuildArgs {
-	return s.ImageConfig.BuildConfig(wsRoot)
+	ic := s.ImageConfig.BuildConfig(wsRoot)
+	ic.Platform = s.Platform
+	return ic
 }
 
 // ApplyEnv returns the service manifest with environment overrides.

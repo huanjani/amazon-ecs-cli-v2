@@ -200,7 +200,7 @@ func (o *initJobOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
-			Platform:       stringifyPlatform(o.os, o.arch),
+			//Platform:       stringifyPlatform(o.os, o.arch),
 		},
 
 		Schedule:    o.schedule,

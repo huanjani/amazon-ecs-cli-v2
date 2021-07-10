@@ -39,10 +39,10 @@ import (
 )
 
 type deployWkldVars struct {
-	appName      string
-	name         string
-	envName      string
-	platform     string
+	appName string
+	name    string
+	envName string
+	//platform     string
 	imageTag     string
 	resourceTags map[string]string
 }
@@ -156,8 +156,10 @@ func (o *deploySvcOpts) Execute() error {
 	}
 	o.targetSvc = svc
 	// fetch and validate platform from service config here
-	o.platform = svc.Platform
-
+	//o.platform = svc.Platform
+	//if err := o.validatePlatform(); err != nil {
+	//	return err
+	//}
 	if err := o.configureClients(); err != nil {
 		return err
 	}
@@ -207,16 +209,16 @@ func (o *deploySvcOpts) validateEnvName() error {
 	return nil
 }
 
-func (o *deploySvcOpts) validatePlatform() error {
-	os := strings.Split(o.platform, "/")[0]
-	fmt.Println("split os: ", os)
-	arch := strings.Split(o.platform, "/")[1]
-	fmt.Println("split arch: ", arch)
-	if os != "linux" || arch != exec.Amd64Arch {
-		return errors.New("BAD")
-	}
-	return nil
-}
+//func (o *deploySvcOpts) validatePlatform() error {
+//	os := strings.Split(o.platform, "/")[0]
+//	fmt.Println("split os: ", os)
+//	arch := strings.Split(o.platform, "/")[1]
+//	fmt.Println("split arch: ", arch)
+//	if os != "linux" || arch != exec.Amd64Arch {
+//		return errors.New("BAD")
+//	}
+//	return nil
+//}
 
 func targetEnv(s store, appName, envName string) (*config.Environment, error) {
 	env, err := s.GetEnvironment(appName, envName)
@@ -317,7 +319,7 @@ func (o *deploySvcOpts) configureContainerImage() error {
 	if err != nil {
 		return err
 	}
-	buildArg.Platform = o.platform
+	//buildArg.Platform = o.platform
 
 	digest, err := o.imageBuilderPusher.BuildAndPush(exec.NewDockerCommand(), buildArg)
 	if err != nil {
@@ -355,6 +357,7 @@ func buildArgs(name, imageTag, copilotDir string, unmarshaledManifest interface{
 		Args:       args.Args,
 		CacheFrom:  args.CacheFrom,
 		Target:     aws.StringValue(args.Target),
+		Platform:   *args.Platform.OsArch,
 		Tags:       tags,
 	}, nil
 }
