@@ -105,7 +105,7 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 	}
 
 	args = append(args, dfDir, "-f", in.Dockerfile)
-
+	fmt.Println("args: ", args)
 	if err := c.Run("docker", args); err != nil {
 		return fmt.Errorf("building image: %w", err)
 	}
