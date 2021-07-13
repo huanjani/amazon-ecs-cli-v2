@@ -88,6 +88,7 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 
 	// Add platform option.
 	if in.Platform != "" {
+		fmt.Println("adding platform flag now: ", in.Platform)
 		args = append(args, "--platform", in.Platform)
 	}
 

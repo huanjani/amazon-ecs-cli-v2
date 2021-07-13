@@ -319,7 +319,6 @@ func (o *deploySvcOpts) configureContainerImage() error {
 	if err != nil {
 		return err
 	}
-	//buildArg.Platform = o.platform
 
 	digest, err := o.imageBuilderPusher.BuildAndPush(exec.NewDockerCommand(), buildArg)
 	if err != nil {
