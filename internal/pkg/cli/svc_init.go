@@ -234,7 +234,7 @@ func (o *initSvcOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
-			//Platform:       stringifyPlatform(o.os, o.arch),
+			Platform:       stringifyPlatform(o.os, o.arch),
 		},
 		Port:        o.port,
 		HealthCheck: hc,
@@ -438,7 +438,7 @@ func dockerPlatform(engine dockerEngine, image string) (os, arch string, err err
 	}
 	// Log a message informing ARM arch users of platform for build.
 	if arch == exec.ArmArch || arch == exec.Arm64Arch {
-		log.Infof("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
+		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
 		arch = exec.Amd64Arch
 		return os, arch, nil
 	}

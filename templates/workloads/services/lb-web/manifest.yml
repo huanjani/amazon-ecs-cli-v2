@@ -5,7 +5,7 @@
 # Your service name will be used in naming your resources like log groups, ECS services, etc.
 name: {{.Name}}
 type: {{.Type}}
-platform: {{.Platform}}
+
 # Distribute traffic to your service.
 http:
   # Requests to this path will be forwarded to your service.
