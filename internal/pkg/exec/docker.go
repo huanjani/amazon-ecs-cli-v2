@@ -68,7 +68,7 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 		dfDir = filepath.Dir(in.Dockerfile)
 	}
 
-	args := []string{"buildx build --platform", in.Platform, "&& docker build"}
+	args := []string{"build"}
 
 	// Add additional image tags to the docker build call.
 	args = append(args, "-t", in.URI)
