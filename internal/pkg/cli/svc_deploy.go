@@ -53,6 +53,7 @@ type deploySvcOpts struct {
 	store               store
 	ws                  wsSvcDirReader
 	imageBuilderPusher  imageBuilderPusher
+	imageBuildXer       imageBuildXer
 	unmarshal           func([]byte) (manifest.WorkloadManifest, error)
 	s3                  artifactUploader
 	cmd                 runner
@@ -319,7 +320,9 @@ func (o *deploySvcOpts) configureContainerImage() error {
 	if err != nil {
 		return err
 	}
-
+	if err := o.imageBuildXer.BuildXBuild(exec.NewDockerCommand(), &exec.BuildArguments{Platform: "linux/amd64"}); err != nil {
+		return err
+	}
 	digest, err := o.imageBuilderPusher.BuildAndPush(exec.NewDockerCommand(), buildArg)
 	if err != nil {
 		return fmt.Errorf("build and push image: %w", err)
