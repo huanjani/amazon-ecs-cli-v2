@@ -155,10 +155,6 @@ type imageBuilderPusher interface {
 	BuildAndPush(docker repository.ContainerLoginBuildPusher, args *exec.BuildArguments) (string, error)
 }
 
-type imageBuildXer interface {
-	BuildXBuild(docker repository.ContainerLoginBuildPusher, args *exec.BuildArguments) error
-}
-
 type repositoryURIGetter interface {
 	URI() string
 }
