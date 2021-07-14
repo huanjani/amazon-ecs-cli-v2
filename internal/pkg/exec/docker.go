@@ -70,7 +70,6 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 
 	args := []string{"build"}
 	// Enable cross-platform builds.
-	args = append(args, "--privileged")
 
 	// Add additional image tags to the docker build call.
 	args = append(args, "-t", in.URI)
