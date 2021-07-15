@@ -525,7 +525,7 @@ type Platform struct {
 // If the user specified a placement that's not valid then throw an error.
 func (c *Platform) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	defaultPlatformConf := Platform{
-		OsArch: aws.String("linux/amd64"),
+		OsArch: aws.String(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
 	}
 	conf := defaultPlatformConf
 	if err := unmarshal(&conf); err != nil {

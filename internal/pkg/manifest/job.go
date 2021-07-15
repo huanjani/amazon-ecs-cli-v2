@@ -143,7 +143,9 @@ func (j ScheduledJob) ApplyEnv(envName string) (WorkloadManifest, error) {
 
 // BuildArgs returns a docker.BuildArguments object for the job given a workspace root.
 func (j *ScheduledJob) BuildArgs(wsRoot string) *DockerBuildArgs {
-	return j.ImageConfig.BuildConfig(wsRoot)
+	ic := j.ImageConfig.BuildConfig(wsRoot)
+	ic.Platform = j.Platform
+	return ic
 }
 
 // BuildRequired returns if the service requires building from the local Dockerfile.

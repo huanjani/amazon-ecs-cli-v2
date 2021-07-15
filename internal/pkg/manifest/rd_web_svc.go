@@ -99,7 +99,9 @@ func (s *RequestDrivenWebService) BuildRequired() (bool, error) {
 
 // BuildArgs returns a docker.BuildArguments object given a ws root directory.
 func (s *RequestDrivenWebService) BuildArgs(wsRoot string) *DockerBuildArgs {
-	return s.ImageConfig.BuildConfig(wsRoot)
+	ic := s.ImageConfig.BuildConfig(wsRoot)
+	ic.Platform = s.Platform
+	return ic
 }
 
 // ApplyEnv returns the service manifest with environment overrides.

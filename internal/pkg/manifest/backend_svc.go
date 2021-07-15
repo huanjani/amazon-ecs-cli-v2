@@ -78,7 +78,9 @@ func (s *BackendService) BuildRequired() (bool, error) {
 
 // BuildArgs returns a docker.BuildArguments object for the service given a workspace root directory
 func (s *BackendService) BuildArgs(wsRoot string) *DockerBuildArgs {
-	return s.ImageConfig.BuildConfig(wsRoot)
+	ic := s.ImageConfig.BuildConfig(wsRoot)
+	ic.Platform = s.Platform
+	return ic
 }
 
 // ApplyEnv returns the service manifest with environment overrides.
