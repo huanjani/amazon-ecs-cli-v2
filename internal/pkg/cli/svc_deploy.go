@@ -362,9 +362,9 @@ func buildArgs(name, imageTag, copilotDir string, unmarshaledManifest interface{
 		tags = append(tags, imageTag)
 	}
 	args := mf.BuildArgs(filepath.Dir(copilotDir))
-	if *args.Platform.OsArch == fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch) {
-		*args.Platform.OsArch = ""
-	}
+	//if *args.Platform.OsArch == fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch) {
+	//	*args.Platform.OsArch = ""
+	//}
 	return &exec.BuildArguments{
 		Dockerfile: *args.Dockerfile,
 		Context:    *args.Context,
