@@ -69,7 +69,6 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 	}
 
 	args := []string{"build"}
-	// Enable cross-platform builds.
 
 	// Add additional image tags to the docker build call.
 	args = append(args, "-t", in.URI)
@@ -105,6 +104,7 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 	}
 
 	args = append(args, dfDir, "-f", in.Dockerfile)
+	fmt.Println("args: ", args)
 	if err := c.Run("docker", args); err != nil {
 		return fmt.Errorf("building image: %w", err)
 	}

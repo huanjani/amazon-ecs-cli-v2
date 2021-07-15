@@ -6,7 +6,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"runtime"
 
 	"github.com/aws/copilot-cli/internal/pkg/aws/sessions"
 	"github.com/aws/copilot-cli/internal/pkg/cli/group"
@@ -331,24 +330,6 @@ func jobTypePromptOpts() []prompt.Option {
 		})
 	}
 	return options
-}
-
-func (o initJobOpts) dockerPlatform() (os, arch string, err error) {
-	os, arch = runtime.GOOS, runtime.GOARCH
-	if o.image == "" {
-		os, arch, err = o.dockerEngine.GetPlatform()
-		if err != nil {
-			return "", "", fmt.Errorf("get os/arch from docker: %w", err)
-		}
-	}
-	// Log a message informing ARM arch users of platform for build.
-	if arch == "arm" || arch == "arm64" {
-		log.Infof("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
-		arch = "amd64"
-		return os, arch, nil
-	}
-
-	return os, arch, nil
 }
 
 // buildJobInitCmd builds the command for creating a new job.

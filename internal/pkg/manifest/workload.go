@@ -356,8 +356,7 @@ type DockerBuildArgs struct {
 	Args       map[string]string `yaml:"args,omitempty"`
 	Target     *string           `yaml:"target,omitempty"`
 	Platform   Platform          `yaml:"platform,omitempty`
-	//Platform  *string  `yaml:"platform,omitempty`
-	CacheFrom []string `yaml:"cache_from,omitempty"`
+	CacheFrom  []string          `yaml:"cache_from,omitempty"`
 }
 
 func (b *DockerBuildArgs) isEmpty() bool {
@@ -532,7 +531,6 @@ func (c *Platform) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	if conf.OsArch == aws.String("") { // If after unmarshaling the user did not specify platform configuration then reset it to default.
 		conf = defaultPlatformConf
-		fmt.Println("setting default")
 	}
 	if !conf.isSupportedPlatform() {
 		return fmt.Errorf("field '%s' is '%v'; must %s/%s", "platform", aws.StringValue(conf.OsArch), exec.LinuxOS, exec.Amd64Arch)

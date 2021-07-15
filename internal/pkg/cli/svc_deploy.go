@@ -39,10 +39,9 @@ import (
 )
 
 type deployWkldVars struct {
-	appName string
-	name    string
-	envName string
-	//platform     string
+	appName      string
+	name         string
+	envName      string
 	imageTag     string
 	resourceTags map[string]string
 }
@@ -50,19 +49,19 @@ type deployWkldVars struct {
 type deploySvcOpts struct {
 	deployWkldVars
 
-	store              store
-	ws                 wsSvcDirReader
-	imageBuilderPusher imageBuilderPusher
-	unmarshal          func([]byte) (manifest.WorkloadManifest, error)
-	s3                 artifactUploader
-	cmd                runner
-	addons             templater
-	appCFN             appResourcesGetter
-	svcCFN             cloudformation.CloudFormation
-	sessProvider       sessionProvider
-	envUpgradeCmd      actionCommand
+	store               store
+	ws                  wsSvcDirReader
+	imageBuilderPusher  imageBuilderPusher
+	unmarshal           func([]byte) (manifest.WorkloadManifest, error)
+	s3                  artifactUploader
+	cmd                 runner
+	addons              templater
+	appCFN              appResourcesGetter
+	svcCFN              cloudformation.CloudFormation
+	sessProvider        sessionProvider
+	envUpgradeCmd       actionCommand
 	newAppVersionGetter func(string) (versionGetter, error)
-	endpointGetter     endpointGetter
+	endpointGetter      endpointGetter
 
 	spinner progress
 	sel     wsSelector
@@ -75,6 +74,10 @@ type deploySvcOpts struct {
 	imageDigest       string
 	buildRequired     bool
 }
+
+const (
+	fmtDefaultOSArch = "%s/%s" // Stringified platform.
+)
 
 func newSvcDeployOpts(vars deployWkldVars) (*deploySvcOpts, error) {
 	store, err := config.NewStore()
@@ -359,6 +362,9 @@ func buildArgs(name, imageTag, copilotDir string, unmarshaledManifest interface{
 		tags = append(tags, imageTag)
 	}
 	args := mf.BuildArgs(filepath.Dir(copilotDir))
+	if *args.Platform.OsArch == fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch) {
+		*args.Platform.OsArch = ""
+	}
 	return &exec.BuildArguments{
 		Dockerfile: *args.Dockerfile,
 		Context:    *args.Context,
