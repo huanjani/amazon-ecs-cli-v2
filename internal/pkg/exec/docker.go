@@ -89,7 +89,6 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 
 	// Add platform option.
 	if in.Platform != "" {
-		fmt.Println("adding platform flag now: ", in.Platform)
 		args = append(args, "--platform", in.Platform)
 	}
 
@@ -106,7 +105,6 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 	}
 
 	args = append(args, dfDir, "-f", in.Dockerfile)
-	fmt.Println("args: ", args)
 	if err := c.Run("docker", args); err != nil {
 		return fmt.Errorf("building image: %w", err)
 	}
