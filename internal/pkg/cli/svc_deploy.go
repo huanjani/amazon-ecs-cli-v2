@@ -75,10 +75,6 @@ type deploySvcOpts struct {
 	buildRequired     bool
 }
 
-const (
-	fmtDefaultOSArch = "%s/%s" // Stringified platform.
-)
-
 func newSvcDeployOpts(vars deployWkldVars) (*deploySvcOpts, error) {
 	store, err := config.NewStore()
 	if err != nil {

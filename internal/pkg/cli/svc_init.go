@@ -227,7 +227,6 @@ func (o *initSvcOpts) Execute() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("platform: ", stringifyPlatform(o.os, o.arch))
 	manifestPath, err := o.init.Service(&initialize.ServiceProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,

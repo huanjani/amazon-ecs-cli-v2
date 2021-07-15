@@ -98,7 +98,7 @@ func newDefaultLoadBalancedWebService() *LoadBalancedWebService {
 		Workload: Workload{
 			Type: aws.String(LoadBalancedWebServiceType),
 			Platform: Platform{
-				OsArch: stringP(fmt.Sprintf("%s/%s", exec.LinuxOS, exec.Amd64Arch)),
+				OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
 			},
 		},
 		LoadBalancedWebServiceConfig: LoadBalancedWebServiceConfig{
