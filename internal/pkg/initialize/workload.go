@@ -266,6 +266,7 @@ func newJobManifest(i *JobProps) (encoding.BinaryMarshaler, error) {
 		return manifest.NewScheduledJob(&manifest.ScheduledJobProps{
 			WorkloadProps: &manifest.WorkloadProps{
 				Name:       i.Name,
+				Platform:   i.Platform,
 				Dockerfile: i.DockerfilePath,
 				Image:      i.Image,
 			},
@@ -299,7 +300,7 @@ func (w *WorkloadInitializer) newLoadBalancedWebServiceManifest(i *ServiceProps)
 			Name:       i.Name,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
-			//Platform:   manifest.Platform{OsArch: &i.Platform},
+			Platform:   i.Platform,
 		},
 		Port:        i.Port,
 		HealthCheck: i.HealthCheck,
@@ -324,6 +325,7 @@ func (w *WorkloadInitializer) newRequestDrivenWebServiceManifest(i *ServiceProps
 	props := &manifest.RequestDrivenWebServiceProps{
 		WorkloadProps: &manifest.WorkloadProps{
 			Name:       i.Name,
+			Platform:   i.Platform,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
 		},
@@ -336,6 +338,7 @@ func newBackendServiceManifest(i *ServiceProps) (*manifest.BackendService, error
 	return manifest.NewBackendService(manifest.BackendServiceProps{
 		WorkloadProps: manifest.WorkloadProps{
 			Name:       i.Name,
+			Platform:   i.Platform,
 			Dockerfile: i.DockerfilePath,
 			Image:      i.Image,
 		},
