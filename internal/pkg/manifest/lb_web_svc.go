@@ -5,11 +5,8 @@ package manifest
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
 	"time"
-
-	"github.com/aws/copilot-cli/internal/pkg/exec"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/copilot-cli/internal/pkg/template"
@@ -83,6 +80,7 @@ func NewLoadBalancedWebService(props *LoadBalancedWebServiceProps) *LoadBalanced
 	svc := newDefaultLoadBalancedWebService()
 	// Apply overrides.
 	svc.Name = stringP(props.Name)
+	svc.Platform = props.Platform
 	svc.LoadBalancedWebServiceConfig.ImageConfig.Image.Location = stringP(props.Image)
 	svc.LoadBalancedWebServiceConfig.ImageConfig.Build.BuildArgs.Dockerfile = stringP(props.Dockerfile)
 	svc.LoadBalancedWebServiceConfig.ImageConfig.Port = aws.Uint16(props.Port)
@@ -97,9 +95,9 @@ func newDefaultLoadBalancedWebService() *LoadBalancedWebService {
 	return &LoadBalancedWebService{
 		Workload: Workload{
 			Type: aws.String(LoadBalancedWebServiceType),
-			Platform: Platform{
-				OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			},
+			//Platform: Platform{
+			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
+			//},
 		},
 		LoadBalancedWebServiceConfig: LoadBalancedWebServiceConfig{
 			ImageConfig: ImageWithPortAndHealthcheck{},

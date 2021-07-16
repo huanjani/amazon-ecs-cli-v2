@@ -4,10 +4,7 @@
 package manifest
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/copilot-cli/internal/pkg/exec"
 	"github.com/aws/copilot-cli/internal/pkg/template"
 	"github.com/imdario/mergo"
 )
@@ -49,6 +46,7 @@ func NewBackendService(props BackendServiceProps) *BackendService {
 	svc := newDefaultBackendService()
 	// Apply overrides.
 	svc.Name = stringP(props.Name)
+	svc.Platform = props.Platform
 	svc.BackendServiceConfig.ImageConfig.Image.Location = stringP(props.Image)
 	svc.BackendServiceConfig.ImageConfig.Build.BuildArgs.Dockerfile = stringP(props.Dockerfile)
 	svc.BackendServiceConfig.ImageConfig.Port = uint16P(props.Port)
@@ -117,9 +115,9 @@ func newDefaultBackendService() *BackendService {
 	return &BackendService{
 		Workload: Workload{
 			Type: aws.String(BackendServiceType),
-			Platform: Platform{
-				OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			},
+			//Platform: Platform{
+			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
+			//},
 		},
 		BackendServiceConfig: BackendServiceConfig{
 			ImageConfig: ImageWithPortAndHealthcheck{},

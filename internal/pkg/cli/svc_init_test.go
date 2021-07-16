@@ -528,7 +528,7 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:           "frontend",
 						Type:           "Load Balanced Web Service",
 						DockerfilePath: "./Dockerfile",
-						Platform:       "linux/amd64",
+						Platform:       "",
 					},
 					Port: 80,
 				}).Return("manifest/path", nil)
@@ -555,7 +555,7 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:           "frontend",
 						Type:           "Backend Service",
 						DockerfilePath: "./Dockerfile",
-						Platform:       "linux/amd64",
+						Platform:       "",
 					},
 				}).Return("manifest/path", nil)
 			},
@@ -582,14 +582,11 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:     "backend",
 						Type:     "Backend Service",
 						Image:    "nginx:latest",
-						Platform: "linux/amd64",
+						Platform: "",
 					},
 				}).Return("manifest/path", nil)
 			},
 			mockDockerfile: func(m *mocks.MockdockerfileParser) {}, // Be sure that no dockerfile parsing happens.
-			mockDockerEngine: func(m *mocks.MockdockerEngine) {
-				m.EXPECT().GetPlatform().Return("linux", "amd64", nil)
-			},
 
 			wantedManifestPath: "manifest/path",
 		},
@@ -607,14 +604,11 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:     "frontend",
 						Type:     "Load Balanced Web Service",
 						Image:    "nginx:latest",
-						Platform: "linux/amd64",
+						Platform: "",
 					},
 				}).Return("manifest/path", nil)
 			},
 			mockDockerfile: func(m *mocks.MockdockerfileParser) {}, // Be sure that no dockerfile parsing happens.
-			mockDockerEngine: func(m *mocks.MockdockerEngine) {
-				m.EXPECT().GetPlatform().Return("linux", "amd64", nil)
-			},
 
 			wantedManifestPath: "manifest/path",
 		},

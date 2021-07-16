@@ -94,8 +94,7 @@ type initSvcOpts struct {
 
 	// Outputs stored on successful actions.
 	manifestPath string
-	os           string
-	arch         string
+	osArch       string
 
 	// Cache variables
 	df dockerfileParser
@@ -223,10 +222,11 @@ func (o *initSvcOpts) Execute() error {
 		}
 	}
 
-	o.os, o.arch, err = dockerPlatform(o.dockerEngine, o.image)
+	o.osArch, err = dockerPlatform(o.dockerEngine, o.image)
 	if err != nil {
 		return err
 	}
+
 	manifestPath, err := o.init.Service(&initialize.ServiceProps{
 		WorkloadProps: initialize.WorkloadProps{
 			App:            o.appName,
@@ -234,7 +234,7 @@ func (o *initSvcOpts) Execute() error {
 			Type:           o.wkldType,
 			DockerfilePath: o.dockerfilePath,
 			Image:          o.image,
-			Platform:       stringifyPlatform(o.os, o.arch),
+			Platform:       o.osArch,
 		},
 		Port:        o.port,
 		HealthCheck: hc,
@@ -428,22 +428,23 @@ func parseHealthCheck(df dockerfileParser) (*manifest.ContainerHealthCheck, erro
 	}, nil
 }
 
-func dockerPlatform(engine dockerEngine, image string) (os, arch string, err error) {
+func dockerPlatform(engine dockerEngine, image string) (osArch string, err error) {
+	var os, arch string
 	os, arch = runtime.GOOS, runtime.GOARCH
 	if image == "" {
 		os, arch, err = engine.GetPlatform()
 		if err != nil {
-			return "", "", fmt.Errorf("get os/arch from docker: %w", err)
+			return "", fmt.Errorf("get os/arch from docker: %w", err)
 		}
 	}
 	// Log a message informing ARM arch users of platform for build.
 	if arch == exec.ArmArch || arch == exec.Arm64Arch {
-		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.", arch)
+		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.\nIf your Docker server is not multi-platform capable, run %s to deploy.\n", arch, "`DOCKER_DEFAULT_PLATFORM=linux/amd64 copilot deploy`", arch)
 		arch = exec.Amd64Arch
-		return os, arch, nil
+		return stringifyPlatform(os, arch), nil
 	}
 
-	return os, arch, nil
+	return "", nil
 }
 
 func stringifyPlatform(os, arch string) string {

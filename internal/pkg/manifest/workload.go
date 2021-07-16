@@ -10,10 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
-
-	"github.com/aws/copilot-cli/internal/pkg/exec"
 
 	"github.com/imdario/mergo"
 
@@ -65,14 +62,14 @@ type WorkloadProps struct {
 	Name       string
 	Dockerfile string
 	Image      string
-	Platform   Platform
+	Platform   string
 }
 
 // Workload holds the basic data that every workload manifest file needs to have.
 type Workload struct {
-	Name     *string  `yaml:"name"`
-	Type     *string  `yaml:"type"`     // must be one of the supported manifest types.
-	Platform Platform `yaml:"platform"` // must be one of the supported os/arch types.
+	Name     *string `yaml:"name"`
+	Type     *string `yaml:"type"`     // must be one of the supported manifest types.
+	Platform string  `yaml:"platform"` // must be one of the supported os/arch types.
 }
 
 // Image represents the workload's container image.
@@ -357,7 +354,7 @@ type DockerBuildArgs struct {
 	Dockerfile *string           `yaml:"dockerfile,omitempty"`
 	Args       map[string]string `yaml:"args,omitempty"`
 	Target     *string           `yaml:"target,omitempty"`
-	Platform   Platform          `yaml:"platform,omitempty`
+	Platform   string            `yaml:"platform,omitempty`
 	CacheFrom  []string          `yaml:"cache_from,omitempty"`
 }
 
@@ -517,40 +514,40 @@ func (c *vpcConfig) isValidPlacement() bool {
 }
 
 // Platform represents operating system and architecture specifications.
-type Platform struct {
-	OsArch *string `yaml:"platform"`
-}
+//type Platform struct {
+//	OsArch *string `yaml:"platform"`
+//}
 
 // UnmarshalYAML ensures that a Platform always defaults to linux/amd64.
 // If the user specified a placement that's not valid then throw an error.
-func (c *Platform) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	defaultPlatformConf := Platform{
-		OsArch: aws.String(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-	}
-	conf := defaultPlatformConf
-	if err := unmarshal(&conf); err != nil {
-		return err
-	}
-	if conf.OsArch == aws.String("") { // If after unmarshaling the user did not specify platform configuration then reset it to default.
-		conf = defaultPlatformConf
-	}
-	if !conf.isSupportedPlatform() {
-		return fmt.Errorf("field '%s' is '%v'; must %s/%s", "platform", aws.StringValue(conf.OsArch), exec.LinuxOS, exec.Amd64Arch)
-	}
-	*c = conf
-	return nil
-}
-func (c *Platform) isSupportedPlatform() bool {
-	fmt.Println("checking if supported")
-	osArch := strings.Split(aws.StringValue(c.OsArch), "/")
-	if len(osArch) < 2 {
-		return false
-	}
-	if osArch[0] != exec.LinuxOS || osArch[1] != exec.Amd64Arch {
-		return false
-	}
-	return true
-}
+//func (c *Platform) UnmarshalYAML(unmarshal func(interface{}) error) error {
+//	defaultPlatformConf := Platform{
+//		OsArch: aws.String(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
+//	}
+//	conf := defaultPlatformConf
+//	if err := unmarshal(&conf); err != nil {
+//		return err
+//	}
+//	if conf.OsArch == aws.String("") { // If after unmarshaling the user did not specify platform configuration then reset it to default.
+//		conf = defaultPlatformConf
+//	}
+//	if !conf.isSupportedPlatform() {
+//		return fmt.Errorf("field '%s' is '%v'; must %s/%s", "platform", aws.StringValue(conf.OsArch), exec.LinuxOS, exec.Amd64Arch)
+//	}
+//	*c = conf
+//	return nil
+//}
+//func (c *Platform) isSupportedPlatform() bool {
+//	fmt.Println("checking if supported")
+//	osArch := strings.Split(aws.StringValue(c.OsArch), "/")
+//	if len(osArch) < 2 {
+//		return false
+//	}
+//	if osArch[0] != exec.LinuxOS || osArch[1] != exec.Amd64Arch {
+//		return false
+//	}
+//	return true
+//}
 
 // UnmarshalWorkload deserializes the YAML input stream into a workload manifest object.
 // If an error occurs during deserialization, then returns the error.

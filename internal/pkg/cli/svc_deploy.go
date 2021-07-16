@@ -155,11 +155,6 @@ func (o *deploySvcOpts) Execute() error {
 		return fmt.Errorf("get service configuration: %w", err)
 	}
 	o.targetSvc = svc
-	// fetch and validate platform from service config here
-	//o.platform = svc.Platform
-	//if err := o.validatePlatform(); err != nil {
-	//	return err
-	//}
 	if err := o.configureClients(); err != nil {
 		return err
 	}
@@ -367,7 +362,7 @@ func buildArgs(name, imageTag, copilotDir string, unmarshaledManifest interface{
 		Args:       args.Args,
 		CacheFrom:  args.CacheFrom,
 		Target:     aws.StringValue(args.Target),
-		Platform:   *args.Platform.OsArch,
+		Platform:   args.Platform,
 		Tags:       tags,
 	}, nil
 }

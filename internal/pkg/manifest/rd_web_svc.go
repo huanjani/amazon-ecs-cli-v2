@@ -4,10 +4,7 @@
 package manifest
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/copilot-cli/internal/pkg/exec"
 	"github.com/aws/copilot-cli/internal/pkg/template"
 	"github.com/imdario/mergo"
 )
@@ -54,6 +51,7 @@ type AppRunnerInstanceConfig struct {
 func NewRequestDrivenWebService(props *RequestDrivenWebServiceProps) *RequestDrivenWebService {
 	svc := newDefaultRequestDrivenWebService()
 	svc.Name = aws.String(props.Name)
+	svc.Platform = props.Platform
 	svc.RequestDrivenWebServiceConfig.ImageConfig.Image.Location = stringP(props.Image)
 	svc.RequestDrivenWebServiceConfig.ImageConfig.Build.BuildArgs.Dockerfile = stringP(props.Dockerfile)
 	svc.RequestDrivenWebServiceConfig.ImageConfig.Port = aws.Uint16(props.Port)
@@ -66,9 +64,9 @@ func newDefaultRequestDrivenWebService() *RequestDrivenWebService {
 	return &RequestDrivenWebService{
 		Workload: Workload{
 			Type: aws.String(RequestDrivenWebServiceType),
-			Platform: Platform{
-				OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			},
+			//Platform: Platform{
+			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
+			//},
 		},
 		RequestDrivenWebServiceConfig: RequestDrivenWebServiceConfig{
 			ImageConfig: ImageWithPort{},

@@ -5,10 +5,7 @@
 package manifest
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/copilot-cli/internal/pkg/exec"
 	"github.com/aws/copilot-cli/internal/pkg/template"
 	"github.com/imdario/mergo"
 )
@@ -74,9 +71,9 @@ func newDefaultScheduledJob() *ScheduledJob {
 	return &ScheduledJob{
 		Workload: Workload{
 			Type: aws.String(ScheduledJobType),
-			Platform: Platform{
-				OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			},
+			//Platform: Platform{
+			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
+			//},
 		},
 		ScheduledJobConfig: ScheduledJobConfig{
 			ImageConfig: ImageWithHealthcheck{},
@@ -101,6 +98,7 @@ func NewScheduledJob(props *ScheduledJobProps) *ScheduledJob {
 	job := newDefaultScheduledJob()
 	// Apply overrides.
 	job.Name = stringP(props.Name)
+	job.Platform = props.Platform
 	job.ImageConfig.Build.BuildArgs.Dockerfile = stringP(props.Dockerfile)
 	job.ImageConfig.Location = stringP(props.Image)
 	job.ImageConfig.HealthCheck = props.HealthCheck
