@@ -439,7 +439,7 @@ func dockerPlatform(engine dockerEngine, image string) (osArch string, err error
 	}
 	// Log a message informing ARM arch users of platform for build.
 	if arch == exec.ArmArch || arch == exec.Arm64Arch {
-		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.\nIf your Docker server is not multi-platform capable, run %s to deploy.\n", arch, "`DOCKER_DEFAULT_PLATFORM=linux/amd64 copilot deploy`", arch)
+		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.\nIf your Docker server is not multi-platform capable, run %s to deploy.\n", arch, "`DOCKER_DEFAULT_PLATFORM=linux/amd64 copilot deploy`")
 		arch = exec.Amd64Arch
 		return stringifyPlatform(os, arch), nil
 	}
