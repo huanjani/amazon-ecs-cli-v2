@@ -108,7 +108,7 @@ func (c DockerCommand) Build(in *BuildArguments) error {
 	args = append(args, dfDir, "-f", in.Dockerfile)
 	// If host platform is not linux/amd64, show the user how the container image is being built; if the build fails (if their docker server doesn't have multi-platform-- and therefore `--platform` capability, for instance) they may see why.
 	if in.Platform != "" {
-		log.Info("Building your container image: docker \n", strings.Join(args, " "))
+		log.Info("Building your container image: docker %s\n", strings.Join(args, " "))
 	}
 	if err := c.Run("docker", args); err != nil {
 		return fmt.Errorf("building image: %w", err)
