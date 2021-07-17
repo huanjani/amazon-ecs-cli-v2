@@ -28,8 +28,6 @@ const (
 	// AWS VPC subnet placement options.
 	PublicSubnetPlacement  = "public"
 	PrivateSubnetPlacement = "private"
-
-	fmtDefaultOSArch = "%s/%s" // Stringified platform.
 )
 
 var (

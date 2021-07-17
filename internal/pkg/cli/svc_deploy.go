@@ -204,17 +204,6 @@ func (o *deploySvcOpts) validateEnvName() error {
 	return nil
 }
 
-//func (o *deploySvcOpts) validatePlatform() error {
-//	os := strings.Split(o.platform, "/")[0]
-//	fmt.Println("split os: ", os)
-//	arch := strings.Split(o.platform, "/")[1]
-//	fmt.Println("split arch: ", arch)
-//	if os != "linux" || arch != exec.Amd64Arch {
-//		return errors.New("BAD")
-//	}
-//	return nil
-//}
-
 func targetEnv(s store, appName, envName string) (*config.Environment, error) {
 	env, err := s.GetEnvironment(appName, envName)
 	if err != nil {
@@ -353,9 +342,9 @@ func buildArgs(name, imageTag, copilotDir string, unmarshaledManifest interface{
 		tags = append(tags, imageTag)
 	}
 	args := mf.BuildArgs(filepath.Dir(copilotDir))
-	//if *args.Platform.OsArch == fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch) {
-	//	*args.Platform.OsArch = ""
-	//}
+	if err := validatePlatform(args.Platform); err != nil {
+		return err
+	}
 	return &exec.BuildArguments{
 		Dockerfile: *args.Dockerfile,
 		Context:    *args.Context,
@@ -543,6 +532,17 @@ func validateAppVersion(alias string, app *config.Application, appVersionGetter 
 	diff := semver.Compare(appVersion, deploy.AliasLeastAppTemplateVersion)
 	if diff < 0 {
 		return fmt.Errorf(`alias is not compatible with application versions below %s`, deploy.AliasLeastAppTemplateVersion)
+	}
+	return nil
+}
+
+func validatePlatform(platform string) error {
+	osArch := strings.Split(platform, "/")
+	if len(osArch) < 2 {
+		return fmt.Errorf("platform %s is invalid; must be of format 'os/arch'", platform)
+	}
+	if osArch[0] != exec.LinuxOS || osArch[1] != exec.Amd64Arch {
+		return fmt.Errorf("platform %s is invalid; valid platforms are: %s", platform, validPlatforms)
 	}
 	return nil
 }

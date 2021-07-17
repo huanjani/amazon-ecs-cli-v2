@@ -60,6 +60,8 @@ Deployed resources (such as your ECR repository, logs) will contain this %[1]s's
 	svcInitSvcPortPrompt     = "Which %s do you want customer traffic sent to?"
 	svcInitSvcPortHelpPrompt = `The port will be used by the load balancer to route incoming traffic to this service.
 You should set this to the port which your Dockerfile uses to communicate with the internet.`
+
+	fmtOSArch = "%s/%s" // Stringified platform.
 )
 
 var serviceTypeHints = map[string]string{
@@ -437,18 +439,15 @@ func dockerPlatform(engine dockerEngine, image string) (osArch string, err error
 			return "", fmt.Errorf("get os/arch from docker: %w", err)
 		}
 	}
-	// Log a message informing ARM arch users of platform for build.
+	// Log a message informing ARM arch users of platform for build and possible workaround.
 	if arch == exec.ArmArch || arch == exec.Arm64Arch {
-		log.Warningf("Architecture type %s is currently unsupported. Image will be built for amd64 architecture.\nIf your Docker server is not multi-platform capable, run %s to deploy.\n", arch, "`DOCKER_DEFAULT_PLATFORM=linux/amd64 copilot deploy`")
+		log.Warningf("Architecture type %s is currently unsupported. Setting platform %s instead.\n", arch, fmt.Sprintf(fmtOSArch, exec.LinuxOS, exec.Amd64Arch))
+		// Redirect architectures that don't build on Fargate to build as amd64.
 		arch = exec.Amd64Arch
-		return stringifyPlatform(os, arch), nil
+		return fmt.Sprintf(fmtOSArch, os, arch), nil
 	}
-
+	// Leave the platform field empty if it has the default architecture that doesn't require special handling.
 	return "", nil
-}
-
-func stringifyPlatform(os, arch string) string {
-	return fmt.Sprintf("%s/%s", os, arch)
 }
 
 func svcTypePromptOpts() []prompt.Option {

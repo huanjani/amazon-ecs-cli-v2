@@ -612,6 +612,34 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 
 			wantedManifestPath: "manifest/path",
 		},
+		"return default platform if arch is unsupported": {
+			inAppName:        "sample",
+			inSvcName:        "frontend",
+			inDockerfilePath: "./Dockerfile",
+			inSvcType:        manifest.LoadBalancedWebServiceType,
+
+			inSvcPort: 80,
+			mockDockerfile: func(m *mocks.MockdockerfileParser) {
+				m.EXPECT().GetHealthCheck().Return(nil, nil)
+			},
+			mockDockerEngine: func(m *mocks.MockdockerEngine) {
+				m.EXPECT().GetPlatform().Return("linux", "abc23", nil)
+			},
+			mockSvcInit: func(m *mocks.MocksvcInitializer) {
+				m.EXPECT().Service(&initialize.ServiceProps{
+					WorkloadProps: initialize.WorkloadProps{
+						App:            "sample",
+						Name:           "frontend",
+						Type:           "Load Balanced Web Service",
+						DockerfilePath: "./Dockerfile",
+						Platform:       "linux/abc23",
+					},
+					Port: 80,
+				}).Return("manifest/path", nil)
+			},
+
+			wantedManifestPath: "manifest/path",
+		},
 		"return error if OS/arch detection fails": {
 			mockDockerEngine: func(m *mocks.MockdockerEngine) {
 				m.EXPECT().GetPlatform().Return("", "", mockError)
