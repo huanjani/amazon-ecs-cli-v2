@@ -71,9 +71,6 @@ func newDefaultScheduledJob() *ScheduledJob {
 	return &ScheduledJob{
 		Workload: Workload{
 			Type: aws.String(ScheduledJobType),
-			//Platform: Platform{
-			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			//},
 		},
 		ScheduledJobConfig: ScheduledJobConfig{
 			ImageConfig: ImageWithHealthcheck{},

@@ -115,9 +115,6 @@ func newDefaultBackendService() *BackendService {
 	return &BackendService{
 		Workload: Workload{
 			Type: aws.String(BackendServiceType),
-			//Platform: Platform{
-			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			//},
 		},
 		BackendServiceConfig: BackendServiceConfig{
 			ImageConfig: ImageWithPortAndHealthcheck{},

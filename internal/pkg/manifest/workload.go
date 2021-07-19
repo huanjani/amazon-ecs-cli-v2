@@ -511,42 +511,6 @@ func (c *vpcConfig) isValidPlacement() bool {
 	return false
 }
 
-// Platform represents operating system and architecture specifications.
-//type Platform struct {
-//	OsArch *string `yaml:"platform"`
-//}
-
-// UnmarshalYAML ensures that a Platform always defaults to linux/amd64.
-// If the user specified a placement that's not valid then throw an error.
-//func (c *Platform) UnmarshalYAML(unmarshal func(interface{}) error) error {
-//	defaultPlatformConf := Platform{
-//		OsArch: aws.String(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-//	}
-//	conf := defaultPlatformConf
-//	if err := unmarshal(&conf); err != nil {
-//		return err
-//	}
-//	if conf.OsArch == aws.String("") { // If after unmarshaling the user did not specify platform configuration then reset it to default.
-//		conf = defaultPlatformConf
-//	}
-//	if !conf.isSupportedPlatform() {
-//		return fmt.Errorf("field '%s' is '%v'; must %s/%s", "platform", aws.StringValue(conf.OsArch), exec.LinuxOS, exec.Amd64Arch)
-//	}
-//	*c = conf
-//	return nil
-//}
-//func (c *Platform) isSupportedPlatform() bool {
-//	fmt.Println("checking if supported")
-//	osArch := strings.Split(aws.StringValue(c.OsArch), "/")
-//	if len(osArch) < 2 {
-//		return false
-//	}
-//	if osArch[0] != exec.LinuxOS || osArch[1] != exec.Amd64Arch {
-//		return false
-//	}
-//	return true
-//}
-
 // UnmarshalWorkload deserializes the YAML input stream into a workload manifest object.
 // If an error occurs during deserialization, then returns the error.
 // If the workload type in the manifest is invalid, then returns an ErrInvalidManifestType.

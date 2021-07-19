@@ -5,7 +5,7 @@
 # Your service name will be used in naming your resources like log groups, ECS services, etc.
 name: {{.Name}}
 type: {{.Type}}
-{{- if ne .Platform ""}}
+{{- if .Platform}}
 platform: {{.Platform}}
 {{- end}}
 

@@ -64,9 +64,6 @@ func newDefaultRequestDrivenWebService() *RequestDrivenWebService {
 	return &RequestDrivenWebService{
 		Workload: Workload{
 			Type: aws.String(RequestDrivenWebServiceType),
-			//Platform: Platform{
-			//	OsArch: stringP(fmt.Sprintf(fmtDefaultOSArch, exec.LinuxOS, exec.Amd64Arch)),
-			//},
 		},
 		RequestDrivenWebServiceConfig: RequestDrivenWebServiceConfig{
 			ImageConfig: ImageWithPort{},
