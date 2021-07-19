@@ -207,6 +207,14 @@ image:
     dockerfile: path/to/Dockerfile
     context: path
 `)
+	mockManifestWithPlatform := []byte(`name: serviceA
+type: 'Load Balanced Web Service'
+platform: linus/abc123
+image:
+  build:
+    dockerfile: path/to/Dockerfile
+    context: path
+`)
 	mockMftNoBuild := []byte(`name: serviceA
 type: 'Load Balanced Web Service'
 image:
@@ -248,6 +256,16 @@ image:
 				)
 			},
 			wantErr: fmt.Errorf("get copilot directory: %w", mockError),
+		},
+		"should return error if platform is invalid": {
+			inputSvc: "serviceA",
+			setupMocks: func(m deploySvcMocks) {
+				gomock.InOrder(
+					m.mockWs.EXPECT().ReadServiceManifest("serviceA").Return(mockManifestWithPlatform, nil),
+					m.mockWs.EXPECT().CopilotDirPath().Return("/ws/root/copilot", nil),
+				)
+			},
+			wantErr: fmt.Errorf("platform %s is invalid; valid platforms are: %s", "linus/abc123", validPlatforms),
 		},
 		"success without building and pushing": {
 			inputSvc: "serviceA",

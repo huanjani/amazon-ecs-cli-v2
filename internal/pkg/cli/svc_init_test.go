@@ -632,7 +632,7 @@ func TestSvcInitOpts_Execute(t *testing.T) {
 						Name:           "frontend",
 						Type:           "Load Balanced Web Service",
 						DockerfilePath: "./Dockerfile",
-						Platform:       "linux/abc23",
+						Platform:       "linux/amd64",
 					},
 					Port: 80,
 				}).Return("manifest/path", nil)
